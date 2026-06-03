@@ -5,308 +5,582 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>US Chess Calculator — Norms &amp; Rating</title>
 <style>
-/* ── Reset & tokens ───────────────────────────────────────────────── */
+/* ── Reset ────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Tokens ───────────────────────────────────────────────────────── */
 :root {
-  --bg:          #f4f2ed;
-  --surface:     #ffffff;
-  --border:      #d5d0c5;
-  --text:        #18181a;
-  --muted:       #6a6560;
-  --accent:      #1a4f7a;
-  --accent-lt:   #e8f0f8;
-  --green:       #1a6e3c;
-  --green-bg:    #d6f0e3;
-  --green-bd:    #1a6e3c;
-  --red:         #8b1a1a;
-  --red-bg:      #fce8e8;
-  --yellow-bg:   #fdf6dc;
-  --yellow-bd:   #b89000;
-  --row-alt:     #faf9f6;
-  --radius:      7px;
+  --ink:        #0f1117;
+  --ink-soft:   #5a5f72;
+  --ink-faint:  #9297a8;
+  --bg:         #f0eeea;
+  --surface:    #ffffff;
+  --surface-2:  #f8f7f4;
+  --border:     #e0dbd2;
+  --border-med: #c8c2b8;
+
+  --navy:       #0d2744;
+  --navy-mid:   #163a61;
+  --blue:       #1c5fa8;
+  --blue-lt:    #deeaf8;
+  --blue-bd:    #7aaee0;
+
+  --emerald:    #0f6b40;
+  --emerald-lt: #d0f0e2;
+  --emerald-bd: #3aaa74;
+
+  --amber:      #92610a;
+  --amber-lt:   #fdf3d8;
+  --amber-bd:   #e0b040;
+
+  --rose:       #8b1c28;
+  --rose-lt:    #fde8eb;
+  --rose-bd:    #e08090;
+
+  --radius-sm:  5px;
+  --radius:     10px;
+  --radius-lg:  14px;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow:     0 4px 12px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08);
 }
 
+/* ── Base ─────────────────────────────────────────────────────────── */
 body {
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
-  color: var(--text);
+  color: var(--ink);
   min-height: 100vh;
-  padding: 1.25rem 1rem 3rem;
   font-size: 0.9375rem;
+  line-height: 1.5;
 }
 
-/* ── Typography helpers ───────────────────────────────────────────── */
-h1 { font-size: 1.45rem; color: var(--accent); margin-bottom: .2rem; }
-.subtitle { color: var(--muted); font-size: .85rem; margin-bottom: 1.4rem; }
-
-h2 {
-  font-size: .95rem;
-  color: var(--accent);
+/* ── Site header ──────────────────────────────────────────────────── */
+.site-header {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  color: #fff;
+  padding: 2rem 1.5rem 1.75rem;
+  position: relative;
+  overflow: hidden;
+}
+.site-header::before {
+  content: "♟";
+  position: absolute;
+  right: -0.5rem;
+  top: -1rem;
+  font-size: 9rem;
+  opacity: .06;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+.site-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.site-title {
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #fff;
   display: flex;
   align-items: center;
-  gap: .5rem;
-  margin-bottom: 1rem;
+  gap: .55rem;
+  margin-bottom: .3rem;
 }
-.badge {
-  background: var(--accent);
-  color: #fff;
+.site-title-icon {
+  font-size: 1.5rem;
+  opacity: .85;
+}
+.site-subtitle {
+  color: rgba(255,255,255,.6);
+  font-size: .875rem;
+}
+.site-pills {
+  display: flex;
+  gap: .5rem;
+  margin-top: .85rem;
+  flex-wrap: wrap;
+}
+.site-pill {
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.18);
+  color: rgba(255,255,255,.85);
   font-size: .72rem;
-  padding: .1rem .45rem;
+  font-weight: 600;
+  padding: .2rem .6rem;
   border-radius: 999px;
-  font-weight: normal;
+  letter-spacing: .03em;
+  text-transform: uppercase;
 }
 
-/* ── Layout ───────────────────────────────────────────────────────── */
+/* ── Page body ────────────────────────────────────────────────────── */
+.page-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.2rem;
-  margin-bottom: 1.1rem;
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+.card-title {
+  font-size: .8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.card-title-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--navy);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .7rem;
+  flex-shrink: 0;
 }
 
+.badge {
+  background: var(--blue);
+  color: #fff;
+  font-size: .7rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+/* ── Two-column layout ────────────────────────────────────────────── */
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.1rem;
+  gap: 1.25rem;
+  align-items: start;
 }
-@media (max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
 
-/* ── Shared inputs ────────────────────────────────────────────────── */
+/* ── Panel headers ────────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin-bottom: 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 2px solid var(--border);
+}
+.panel-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.panel-icon.blue    { background: var(--blue-lt);    color: var(--blue); }
+.panel-icon.emerald { background: var(--emerald-lt); color: var(--emerald); }
+.panel-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.panel-sub {
+  font-size: .75rem;
+  color: var(--ink-faint);
+}
+
+/* ── Opponent input grid ──────────────────────────────────────────── */
 .input-grid {
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: .45rem;
+  grid-template-columns: 28px 1fr 32px;
+  gap: .4rem;
   align-items: center;
-  margin-bottom: .7rem;
+  margin-bottom: .55rem;
 }
 .col-label {
-  font-size: .72rem;
-  color: var(--muted);
+  font-size: .68rem;
+  color: var(--ink-faint);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
 }
 .row-num {
-  font-size: .8rem;
-  color: var(--muted);
-  text-align: right;
-  padding-right: .25rem;
-  min-width: 1.4rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .72rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  flex-shrink: 0;
 }
+
+/* ── Inputs & selects ─────────────────────────────────────────────── */
 input[type="number"], select {
   width: 100%;
-  padding: .4rem .55rem;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  font-size: .925rem;
+  padding: .45rem .65rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .9rem;
   font-family: inherit;
-  color: var(--text);
-  background: #faf9f6;
-  transition: border-color .15s;
+  color: var(--ink);
+  background: var(--surface-2);
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  appearance: none;
+  -webkit-appearance: none;
 }
 input[type="number"]:focus, select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--blue);
   background: #fff;
+  box-shadow: 0 0 0 3px rgba(28,95,168,.12);
 }
-input.invalid { border-color: var(--red); background: #fdf5f5; }
-
-.btn-remove {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--muted);
+input.invalid {
+  border-color: var(--rose-bd);
+  background: var(--rose-lt);
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239297a8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right .65rem center;
+  padding-right: 2rem;
   cursor: pointer;
-  padding: .3rem .5rem;
-  font-size: .95rem;
-  line-height: 1;
-  transition: background .15s, color .15s;
 }
-.btn-remove:hover { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+/* ── Buttons ──────────────────────────────────────────────────────── */
+.btn-remove {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink-faint);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .8rem;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.btn-remove:hover {
+  background: var(--rose-lt);
+  border-color: var(--rose-bd);
+  color: var(--rose);
+}
 
 .btn-add {
   display: inline-flex;
   align-items: center;
-  gap: .35rem;
-  padding: .45rem .85rem;
-  background: var(--accent);
+  gap: .4rem;
+  padding: .5rem 1rem;
+  background: var(--navy);
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--radius-sm);
   font-size: .85rem;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: opacity .15s;
+  transition: background .15s, transform .1s;
+  box-shadow: var(--shadow-sm);
 }
-.btn-add:hover { opacity: .85; }
+.btn-add:hover { background: var(--navy-mid); }
+.btn-add:active { transform: scale(.97); }
 
+/* ── Meta row (score + other fields) ─────────────────────────────── */
+.meta-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0 .9rem;
+}
 .meta-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: .65rem;
-  margin-top: .9rem;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: .7rem;
 }
 .meta-field label {
   display: block;
-  font-size: .75rem;
+  font-size: .72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .04em;
-  color: var(--muted);
-  margin-bottom: .25rem;
+  letter-spacing: .05em;
+  color: var(--ink-faint);
+  margin-bottom: .3rem;
 }
 .meta-field input, .meta-field select { width: 100%; }
 
-/* ── Result tables ────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* ── Tables ───────────────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
 table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+thead tr { background: var(--surface-2); }
 th {
   text-align: left;
-  padding: .45rem .6rem;
-  font-size: .7rem;
+  padding: .55rem .7rem;
+  font-size: .68rem;
   text-transform: uppercase;
-  letter-spacing: .04em;
-  color: var(--muted);
+  letter-spacing: .06em;
+  color: var(--ink-faint);
+  font-weight: 700;
   border-bottom: 2px solid var(--border);
   white-space: nowrap;
 }
 th.r, td.r { text-align: right; }
 th.c, td.c { text-align: center; }
-td { padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+td {
+  padding: .6rem .7rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
 tr:last-child td { border-bottom: none; }
-tr:nth-child(even) td { background: var(--row-alt); }
+tbody tr:hover td { background: var(--surface-2); }
 
-tr.row-best td { background: var(--green-bg) !important; }
-tr.row-best td:first-child { border-left: 3px solid var(--green-bd); font-weight: 700; }
+tr.row-best td {
+  background: var(--emerald-lt) !important;
+}
+tr.row-best td:first-child {
+  border-left: 3px solid var(--emerald-bd);
+}
+tr.row-best:hover td { filter: brightness(.97); }
 
-.lv-name { font-weight: 600; }
-.lv-sub  { color: var(--muted); font-size: .78rem; }
+.lv-name { font-weight: 700; color: var(--ink); font-size: .875rem; }
+.lv-sub  { color: var(--ink-faint); font-size: .76rem; margin-top: .1rem; }
 
-.pill-earned    { color: var(--green); font-weight: 700; font-size: .85rem; }
-.pill-possible  { color: var(--accent); font-weight: 600; }
-.pill-impossible{ color: var(--red);   font-size: .8rem; }
-.pill-no        { color: var(--muted); }
+.pill-earned {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  background: var(--emerald-lt);
+  color: var(--emerald);
+  border: 1px solid var(--emerald-bd);
+  border-radius: 999px;
+  padding: .15rem .55rem;
+  font-size: .78rem;
+  font-weight: 700;
+}
+.pill-possible {
+  color: var(--blue);
+  font-weight: 700;
+  font-size: .85rem;
+}
+.pill-impossible {
+  color: var(--rose);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+.pill-no {
+  color: var(--ink-faint);
+  font-size: .82rem;
+}
 
 .tag-best {
   display: inline-block;
-  font-size: .67rem;
-  background: var(--green-bd);
+  font-size: .63rem;
+  background: var(--emerald);
   color: #fff;
-  border-radius: 3px;
-  padding: .08rem .35rem;
-  margin-left: .35rem;
+  border-radius: 4px;
+  padding: .1rem .4rem;
+  margin-left: .4rem;
   vertical-align: middle;
-  font-weight: 700;
-  letter-spacing: .03em;
+  font-weight: 800;
+  letter-spacing: .04em;
 }
 
-/* ── Summary callouts ─────────────────────────────────────────────── */
+/* ── Callouts ─────────────────────────────────────────────────────── */
 .callout {
   display: flex;
   align-items: flex-start;
-  gap: .6rem;
-  border-radius: var(--radius);
-  padding: .65rem .85rem;
+  gap: .65rem;
+  border-radius: var(--radius-sm);
+  padding: .75rem .9rem;
   font-size: .875rem;
-  margin-top: .85rem;
+  margin-top: .9rem;
+  line-height: 1.5;
 }
-.callout.green  { background: var(--green-bg); border: 1px solid var(--green-bd); }
-.callout.blue   { background: var(--accent-lt); border: 1px solid #8ab0d8; }
-.callout.yellow { background: var(--yellow-bg); border: 1px solid var(--yellow-bd); }
-.callout.red    { background: var(--red-bg);    border: 1px solid #d08080; }
-.callout-icon   { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; }
+.callout.green  { background: var(--emerald-lt); border: 1px solid var(--emerald-bd); }
+.callout.blue   { background: var(--blue-lt);    border: 1px solid var(--blue-bd); }
+.callout.yellow { background: var(--amber-lt);   border: 1px solid var(--amber-bd); }
+.callout.red    { background: var(--rose-lt);    border: 1px solid var(--rose-bd); }
+.callout-icon   { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; line-height: 1; }
 .callout-body   { line-height: 1.55; }
-.callout-body strong { display: block; margin-bottom: .1rem; }
+.callout-body strong { display: block; margin-bottom: .15rem; font-size: .9rem; }
 
-/* ── Rating panel stat grid ───────────────────────────────────────── */
+/* ── Stat grid (rating panel) ─────────────────────────────────────── */
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: .6rem;
-  margin-bottom: .8rem;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: .65rem;
+  margin-bottom: .85rem;
 }
 .stat-box {
-  background: var(--row-alt);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: .55rem .7rem;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .7rem .8rem;
+  transition: border-color .15s;
 }
-.stat-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 700; margin-bottom: .2rem; }
-.stat-val   { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-.stat-sub   { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+.stat-box:hover { border-color: var(--border-med); }
+.stat-box.highlight {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.stat-label {
+  font-size: .67rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--ink-faint);
+  font-weight: 700;
+  margin-bottom: .25rem;
+}
+.stat-box.highlight .stat-label { color: rgba(255,255,255,.55); }
+.stat-val {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.stat-box.highlight .stat-val { color: #fff; }
+.stat-sub {
+  font-size: .7rem;
+  color: var(--ink-faint);
+  margin-top: .2rem;
+}
+.stat-box.highlight .stat-sub { color: rgba(255,255,255,.5); }
 
-.delta-pos { color: var(--green); }
-.delta-neg { color: var(--red); }
-.delta-neu { color: var(--muted); }
+.delta-pos { color: var(--emerald); }
+.delta-neg { color: var(--rose); }
+.delta-neu { color: var(--ink-faint); }
 
 /* ── Empty state ──────────────────────────────────────────────────── */
-.empty { text-align: center; color: var(--muted); padding: 1.5rem; font-size: .875rem; }
+.empty {
+  text-align: center;
+  color: var(--ink-faint);
+  padding: 2rem 1rem;
+  font-size: .875rem;
+  font-style: italic;
+}
 
 /* ── Collapsible ──────────────────────────────────────────────────── */
 details {
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  background: var(--surface);
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
 }
 summary {
   cursor: pointer;
   font-size: .85rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--ink);
   user-select: none;
   list-style: none;
   display: flex;
   align-items: center;
-  gap: .4rem;
-  padding: .75rem 1.1rem;
+  gap: .5rem;
+  padding: .9rem 1.25rem;
+  transition: background .15s;
 }
+summary:hover { background: var(--surface-2); }
 summary::-webkit-details-marker { display: none; }
-summary::before { content: "▶"; font-size: .62rem; transition: transform .15s; display: inline-block; }
+summary::before {
+  content: "▶";
+  font-size: .58rem;
+  color: var(--ink-faint);
+  transition: transform .15s;
+  display: inline-block;
+}
+details[open] summary { border-bottom: 1px solid var(--border); }
 details[open] summary::before { transform: rotate(90deg); }
 .details-body {
-  padding: 0 1.1rem 1rem;
+  padding: 1rem 1.25rem;
   font-size: .82rem;
-  color: var(--muted);
-  line-height: 1.7;
+  color: var(--ink-soft);
+  line-height: 1.75;
 }
-.details-body p  { margin-bottom: .55rem; }
+.details-body p { margin-bottom: .6rem; }
 .details-body p:last-child { margin-bottom: 0; }
 .details-body code {
-  background: #f0ede7;
-  padding: .1rem .35rem;
-  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  padding: .1rem .38rem;
+  border-radius: 4px;
   font-size: .79rem;
-  color: var(--text);
+  color: var(--ink);
+  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
 }
-.details-body strong { color: var(--text); }
+.details-body strong { color: var(--ink); font-weight: 700; }
 
 /* ── Footnote ─────────────────────────────────────────────────────── */
 .footnote {
-  font-size: .75rem;
-  color: var(--muted);
+  font-size: .74rem;
+  color: var(--ink-faint);
   border-top: 1px solid var(--border);
-  padding-top: .7rem;
-  margin-top: .7rem;
-  line-height: 1.6;
+  padding-top: .75rem;
+  margin-top: .9rem;
+  line-height: 1.65;
 }
 .footnote p { margin-bottom: .3rem; }
 .footnote p:last-child { margin-bottom: 0; }
+
+/* ── Responsive tweaks ────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .site-header { padding: 1.5rem 1rem 1.35rem; }
+  .site-title { font-size: 1.35rem; }
+  .page-body { padding: 1rem .85rem 2rem; }
+  .card { padding: 1rem 1.1rem; }
+}
 </style>
 </head>
 <body>
 
-<h1>US Chess Calculator</h1>
-<p class="subtitle">Norms &amp; Rating Projection — one shared field set, both panels update live.</p>
+<!-- ══════════════════════════════════════════════════ HEADER -->
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="site-title">
+      <span class="site-title-icon">♟</span>
+      US Chess Calculator
+    </div>
+    <p class="site-subtitle">Norm requirements &amp; rating projection — one field set, both panels update live.</p>
+    <div class="site-pills">
+      <span class="site-pill">Official formula</span>
+      <span class="site-pill">April 2026 spec</span>
+      <span class="site-pill">No sign-in needed</span>
+    </div>
+  </div>
+</header>
 
-<!-- ═══════════════════════════════════════════════════════ SHARED INPUTS -->
+<div class="page-body">
+
+<!-- ══════════════════════════════════════════════════ SHARED INPUTS -->
 <div class="card">
-  <h2>
+  <div class="card-title">
+    <span class="card-title-icon">⚙</span>
     Event Inputs
     <span class="badge" id="game-badge">5 games</span>
-  </h2>
+  </div>
 
   <div class="input-grid" id="opp-grid">
     <span class="col-label">#</span>
@@ -316,42 +590,51 @@ details[open] summary::before { transform: rotate(90deg); }
 
   <button class="btn-add" id="btn-add">+ Add Opponent</button>
 
+  <hr class="meta-divider">
+
   <div class="meta-row">
     <div class="meta-field">
       <label for="inp-score">Total Score (S)</label>
       <select id="inp-score"></select>
     </div>
     <div class="meta-field">
-      <label for="inp-r">Your Current Rating (R)</label>
+      <label for="inp-r">Your Rating (R)</label>
       <input type="number" id="inp-r" placeholder="e.g. 1650" min="100" max="3000" step="1">
     </div>
     <div class="meta-field">
-      <label for="inp-n">Prior Rated Games (N)</label>
+      <label for="inp-n">Prior Games (N)</label>
       <input type="number" id="inp-n" placeholder="e.g. 45" min="0" max="9999" step="1">
     </div>
     <div class="meta-field">
-      <label for="inp-peak" title="Used to compute your rating floor. Leave blank to skip.">Peak Rating (optional)</label>
+      <label for="inp-peak" title="Used to check your rating floor. Leave blank to skip.">Peak Rating <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
       <input type="number" id="inp-peak" placeholder="e.g. 1800" min="100" max="3000" step="1">
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════ TWO PANELS -->
+<!-- ══════════════════════════════════════════════════ TWO PANELS -->
 <div class="two-col">
 
-  <!-- ─────────────────────────────────────── PANEL 1: NORMS -->
+  <!-- ── PANEL 1: NORMS ─────────────────────────────────────────── -->
   <div>
     <div class="card">
-      <h2>Norms</h2>
+      <div class="panel-header">
+        <span class="panel-icon emerald">🏅</span>
+        <div>
+          <div class="panel-title">Norm Requirements</div>
+          <div class="panel-sub">Score needed to earn each title norm</div>
+        </div>
+      </div>
+
       <div class="table-wrap">
         <table id="norm-table">
           <thead>
             <tr>
               <th>Level</th>
-              <th class="r">Exp.</th>
+              <th class="r">Expected</th>
               <th class="r">Threshold</th>
               <th class="r">Min Score</th>
-              <th class="c">Score earns?</th>
+              <th class="c">Status</th>
             </tr>
           </thead>
           <tbody id="norm-body">
@@ -359,50 +642,61 @@ details[open] summary::before { transform: rotate(90deg); }
           </tbody>
         </table>
       </div>
+
       <div id="norm-callout"></div>
+
       <div class="footnote">
-        <p>⚠ Uses the standard logistic formula. US Chess's iterative algorithm may produce different results — treat as estimate.</p>
-        <p>⚠ Earning a norm is per-event. A <em>title</em> requires <strong>five norms</strong> at that level. CM (2000) and above also require having reached that published rating.</p>
+        <p>⚠ Uses the standard logistic formula. US Chess's iterative algorithm may differ — treat as an estimate.</p>
+        <p>⚠ A <em>title</em> requires <strong>five norms</strong> at that level. CM (2000+) also requires reaching that published rating.</p>
       </div>
     </div>
   </div>
 
-  <!-- ─────────────────────────────────────── PANEL 2: RATING -->
+  <!-- ── PANEL 2: RATING ────────────────────────────────────────── -->
   <div>
     <div class="card">
-      <h2>Rating Projection</h2>
-      <div id="rating-content">
-        <div class="empty">Enter your rating (R) and prior games (N) above.</div>
+      <div class="panel-header">
+        <span class="panel-icon blue">📈</span>
+        <div>
+          <div class="panel-title">Rating Projection</div>
+          <div class="panel-sub">Estimated post-event rating</div>
+        </div>
       </div>
-      <div class="footnote" style="margin-top:.5rem">
-        <p>⚠ Implements the approximating formula (Glickman &amp; Doan, April 2026 spec, §3–4.2). The official algorithm runs this twice with iteratively updated opponent ratings — results may differ slightly.</p>
-        <p>⚠ Bonus assumes all opponents in this event are distinct (played at most once each). Floor calculation requires your peak rating.</p>
+
+      <div id="rating-content">
+        <div class="empty">Enter your rating and prior games above.</div>
+      </div>
+
+      <div class="footnote">
+        <p>⚠ Approximating formula (Glickman &amp; Doan, April 2026 spec §3–4.2). Official algorithm runs two iterations with updated opponent ratings — may differ slightly.</p>
+        <p>⚠ Bonus assumes all opponents in this event are distinct. Enter peak rating to check floor.</p>
       </div>
     </div>
   </div>
 
-</div><!-- end .two-col -->
+</div><!-- /.two-col -->
 
-<!-- ═══════════════════════════════════════════════════════ HOW IT WORKS -->
+<!-- ══════════════════════════════════════════════════ HOW IT WORKS -->
 <details>
   <summary>How this works</summary>
   <div class="details-body">
-    <p><strong>Shared helper:</strong> <code>expectedScore(playerRating, opponentRating) = 1 / (1 + 10^((opp − player) / 400))</code>. This is the standard logistic formula used by both panels.</p>
+    <p><strong>Shared helper:</strong> <code>expectedScore(playerRating, oppRating) = 1 / (1 + 10^((opp − player) / 400))</code> — the standard logistic formula used by both panels.</p>
 
-    <p><strong>Norm panel</strong> — for each title level Y, <em>expectedTotal(Y)</em> sums <code>expectedScore(Y, Ri)</code> over all opponents (the hypothetical Y-rated player's expected score vs. this field). A norm at level Y requires your actual score S to be <em>strictly greater than</em> expectedTotal(Y) + 1.00. Since chess scores are multiples of 0.5, the minimum qualifying score is <code>minScore = (⌊(expectedTotal + 1.0) / 0.5⌋ + 1) × 0.5</code>. Verify: expected = 2.5 → threshold = 3.5 → minScore = <strong>4.0</strong>.</p>
+    <p><strong>Norm panel</strong> — for each title level Y, <em>expectedTotal(Y)</em> sums <code>expectedScore(Y, Rᵢ)</code> over all opponents. A norm requires your actual score S to be <em>strictly greater than</em> expectedTotal + 1.00. Since chess scores are multiples of 0.5, the minimum qualifying score is <code>minScore = (⌊(expectedTotal + 1.0) / 0.5⌋ + 1) × 0.5</code>. Verify: expected = 2.5 → threshold = 3.5 → minScore = <strong>4.0</strong>.</p>
 
     <p><strong>Rating panel</strong> (Glickman &amp; Doan, April 6, 2026 spec, §3–4.2):</p>
     <p>• <strong>N*</strong> = 50 / √(0.662 + 0.00000739 × (2569 − R)²) if R ≤ 2355, else 50</p>
-    <p>• <strong>Ne</strong> = min(N, N*) — effective game count</p>
+    <p>• <strong>Ne</strong> = min(N, N*) — effective game count (caps at 50; lower for lower-rated players)</p>
     <p>• <strong>K</strong> = 800 / (Ne + m)</p>
-    <p>• <strong>We</strong> = Σ expectedScore(R, Ri) over all opponents</p>
-    <p>• <strong>Base change</strong> = K × (S − We)</p>
-    <p>• <strong>Bonus</strong> (when m ≥ 3 and all opponents distinct): m* = max(m, 4); bonus = max(0, K(S−We) − B√m*) where <strong>B = 10</strong> (effective Jan 1, 2025)</p>
+    <p>• <strong>We</strong> = Σ expectedScore(R, Rᵢ) over all opponents</p>
+    <p>• <strong>Bonus</strong> (m ≥ 3, distinct opponents): m* = max(m, 4); bonus = max(0, K(S−We) − 10√m*)</p>
     <p>• <strong>R_new</strong> = R + K(S − We) + bonus, rounded to nearest integer</p>
 
-    <p><strong>Rating floors</strong> (§5): Class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor ≤ (peak − 200). The absolute floor is 100.</p>
+    <p><strong>Floors</strong> (§5): class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
   </div>
 </details>
+
+</div><!-- /.page-body -->
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
@@ -410,7 +704,6 @@ details[open] summary::before { transform: rotate(90deg); }
 //             April 6, 2026, sections 3 and 4.2)
 // ═══════════════════════════════════════════════════════════════════════════
 
-// Norm levels: [name, Y]
 const NORM_LEVELS = [
   ["4th Category",     1200],
   ["3rd Category",     1400],
@@ -421,11 +714,8 @@ const NORM_LEVELS = [
   ["Senior Master",    2400],
 ];
 
-// Rating floors for class-based floor (§5): 1200, 1300, …, 2100
 const CLASS_FLOORS = [1200,1300,1400,1500,1600,1700,1800,1900,2000,2100];
-
-// Bonus multiplier B (§4.2, effective January 1, 2025)
-const BONUS_B = 10;
+const BONUS_B = 10; // §4.2, effective January 1, 2025
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SHARED HELPER  — player rating is an ARGUMENT, never hardcoded
@@ -439,18 +729,17 @@ function expectedScore(playerRating, opponentRating) {
 // STATE
 // ═══════════════════════════════════════════════════════════════════════════
 
-let rows = []; // each: { numEl, inputEl, removeEl }
+let rows = [];
 
-// ── DOM refs ────────────────────────────────────────────────────────────────
-const oppGrid    = document.getElementById("opp-grid");
-const gameBadge  = document.getElementById("game-badge");
-const btnAdd     = document.getElementById("btn-add");
-const inpScore   = document.getElementById("inp-score");
-const inpR       = document.getElementById("inp-r");
-const inpN       = document.getElementById("inp-n");
-const inpPeak    = document.getElementById("inp-peak");
-const normBody   = document.getElementById("norm-body");
-const normCallout= document.getElementById("norm-callout");
+const oppGrid       = document.getElementById("opp-grid");
+const gameBadge     = document.getElementById("game-badge");
+const btnAdd        = document.getElementById("btn-add");
+const inpScore      = document.getElementById("inp-score");
+const inpR          = document.getElementById("inp-r");
+const inpN          = document.getElementById("inp-n");
+const inpPeak       = document.getElementById("inp-peak");
+const normBody      = document.getElementById("norm-body");
+const normCallout   = document.getElementById("norm-callout");
 const ratingContent = document.getElementById("rating-content");
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -458,20 +747,18 @@ const ratingContent = document.getElementById("rating-content");
 // ═══════════════════════════════════════════════════════════════════════════
 
 function makeRow() {
-  const numEl    = document.createElement("span");
+  const numEl = document.createElement("span");
   numEl.className = "row-num";
 
-  const inputEl  = document.createElement("input");
-  inputEl.type   = "number";
-  inputEl.min    = 100;
-  inputEl.max    = 3000;
-  inputEl.step   = 1;
+  const inputEl = document.createElement("input");
+  inputEl.type = "number";
+  inputEl.min = 100; inputEl.max = 3000; inputEl.step = 1;
   inputEl.placeholder = "e.g. 1550";
   inputEl.addEventListener("input", () => { validateInput(inputEl); recalc(); });
 
   const removeEl = document.createElement("button");
   removeEl.className = "btn-remove";
-  removeEl.title    = "Remove";
+  removeEl.title = "Remove";
   removeEl.textContent = "✕";
   removeEl.addEventListener("click", () => removeRow(rowObj));
 
@@ -487,7 +774,6 @@ function validateInput(el) {
 }
 
 function renderGrid() {
-  // Remove all grid children beyond the 3 header labels
   while (oppGrid.children.length > 3) oppGrid.removeChild(oppGrid.lastChild);
   rows.forEach((r, i) => {
     r.numEl.textContent = i + 1;
@@ -513,7 +799,6 @@ function removeRow(rowObj) {
   recalc();
 }
 
-// ── Score dropdown ──────────────────────────────────────────────────────────
 function refreshScoreSelect(m) {
   const prev = inpScore.value;
   inpScore.innerHTML = '<option value="">—</option>';
@@ -530,9 +815,8 @@ function refreshScoreSelect(m) {
 // UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
 
-function formatScore(s) { return Number.isInteger(s) ? s.toFixed(1) : s.toFixed(1); }
+function formatScore(s) { return s.toFixed(1); }
 function f2(n)           { return n.toFixed(2); }
-function fi(n)           { return Math.round(n).toString(); }
 
 function validRatings() {
   return rows
@@ -540,23 +824,15 @@ function validRatings() {
     .filter(v => Number.isFinite(v) && v >= 100 && v <= 3000);
 }
 
-// Peak-based rating floor (§5 of April 2026 spec)
-// Returns: { floor, label } or null if peak unknown
 function peakFloor(peak) {
   if (!Number.isFinite(peak)) return null;
-  const rounded = Math.round(peak);
-  const basis   = rounded - 200;
-  // Find largest class floor ≤ basis
+  const basis = Math.round(peak) - 200;
   let best = null;
-  for (const f of CLASS_FLOORS) {
-    if (f <= basis) best = f;
-  }
-  // If below all class floors, fall back to absolute floor 100
+  for (const f of CLASS_FLOORS) { if (f <= basis) best = f; }
   if (best === null) return { floor: 100, label: "absolute floor (100)" };
   return { floor: best, label: `class floor (${best})` };
 }
 
-// N* formula (§3 April 2026 spec)
 function nStar(R) {
   if (R > 2355) return 50;
   return 50 / Math.sqrt(0.662 + 0.00000739 * Math.pow(2569 - R, 2));
@@ -569,26 +845,22 @@ function nStar(R) {
 function computeNorms(ratings, m, score) {
   const hasScore = score !== "" && score !== null && score !== undefined;
   const S = hasScore ? parseFloat(score) : null;
+  let bestAchievable = -1, bestEarned = -1;
 
-  let bestAchievable = -1;
-  let bestEarned     = -1;
-
-  const rows = NORM_LEVELS.map(([name, Y]) => {
+  const nrows = NORM_LEVELS.map(([name, Y]) => {
     const expTotal  = ratings.reduce((sum, R) => sum + expectedScore(Y, R), 0);
     const threshold = expTotal + 1.0;
-    // Smallest multiple of 0.5 strictly > threshold
     const minSc     = (Math.floor(threshold / 0.5) + 1) * 0.5;
     const possible  = minSc <= m;
     const earned    = hasScore && S !== null && possible && S >= minSc;
     return { name, Y, expTotal, threshold, minSc, possible, earned };
   });
 
-  rows.forEach((r, i) => {
-    if (r.possible)  bestAchievable = i;
-    if (r.earned)    bestEarned     = i;
+  nrows.forEach((r, i) => {
+    if (r.possible) bestAchievable = i;
+    if (r.earned)   bestEarned     = i;
   });
-
-  return { rows, bestAchievable, bestEarned, S, hasScore };
+  return { rows: nrows, bestAchievable, bestEarned, S, hasScore };
 }
 
 function renderNorms(ratings, m, score) {
@@ -606,8 +878,8 @@ function renderNorms(ratings, m, score) {
     const tr = document.createElement("tr");
     if (isBestA) tr.className = "row-best";
 
-    const levelHtml = `<span class="lv-name">${name}${isBestA ? '<span class="tag-best">BEST</span>' : ''}</span><br>
-                       <span class="lv-sub">(${Y.toLocaleString()})</span>`;
+    const levelHtml = `<div class="lv-name">${name}${isBestA ? '<span class="tag-best">BEST</span>' : ''}</div>
+                       <div class="lv-sub">${Y.toLocaleString()} rating</div>`;
 
     let statusHtml;
     if (!hasScore) {
@@ -633,27 +905,23 @@ function renderNorms(ratings, m, score) {
     normBody.appendChild(tr);
   });
 
-  // Summary callout
   let callHtml = "";
   if (bestAchievable < 0) {
     callHtml = `<div class="callout red"><span class="callout-icon">⚠</span>
-      <div class="callout-body"><strong>No norm is achievable</strong>
-      No level can be reached even with a perfect score against this field.</div></div>`;
+      <div class="callout-body"><strong>No norm achievable</strong>No level can be reached even with a perfect score against this field.</div></div>`;
   } else {
     const ba = nrows[bestAchievable];
     callHtml = `<div class="callout blue"><span class="callout-icon">🏆</span>
-      <div class="callout-body"><strong>Highest achievable:</strong>
-      ${ba.name} (${ba.Y.toLocaleString()}) — needs ${formatScore(ba.minSc)} of ${m}.</div></div>`;
+      <div class="callout-body"><strong>Highest achievable: ${ba.name}</strong>Needs ${formatScore(ba.minSc)} of ${m} (${ba.Y.toLocaleString()} level).</div></div>`;
   }
   if (hasScore) {
     if (bestEarned >= 0) {
       const be = nrows[bestEarned];
       callHtml += `<div class="callout green"><span class="callout-icon">✓</span>
-        <div class="callout-body"><strong>Best norm earned at S = ${formatScore(S)}:</strong>
-        ${be.name} (${be.Y.toLocaleString()})</div></div>`;
+        <div class="callout-body"><strong>Best norm earned at ${formatScore(S)}: ${be.name}</strong>${be.Y.toLocaleString()} level norm — congratulations!</div></div>`;
     } else {
       callHtml += `<div class="callout yellow"><span class="callout-icon">✗</span>
-        <div class="callout-body"><strong>No norm earned</strong> at score ${formatScore(S)} against this field.</div></div>`;
+        <div class="callout-body"><strong>No norm at ${formatScore(S)}</strong>Score not sufficient against this field for any norm level.</div></div>`;
     }
   }
   normCallout.innerHTML = callHtml;
@@ -669,7 +937,7 @@ function renderRating(ratings, m, score) {
   const peak = parseFloat(inpPeak.value);
 
   if (!Number.isFinite(R) || !Number.isFinite(N)) {
-    ratingContent.innerHTML = '<div class="empty">Enter your rating (R) and prior games (N) above.</div>';
+    ratingContent.innerHTML = '<div class="empty">Enter your rating and prior games above.</div>';
     return;
   }
   if (ratings.length === 0) {
@@ -680,124 +948,100 @@ function renderRating(ratings, m, score) {
   const hasScore = score !== "" && score !== null && score !== undefined;
   const S        = hasScore ? parseFloat(score) : null;
 
-  // §3: N* and Ne
   const Nstar = nStar(R);
   const Ne    = Math.min(N, Nstar);
-
-  // §4.2: K factor
-  const K = 800 / (Ne + m);
-
-  // We: expected score for this player
-  const We = ratings.reduce((sum, Ri) => sum + expectedScore(R, Ri), 0);
+  const K     = 800 / (Ne + m);
+  const We    = ratings.reduce((sum, Ri) => sum + expectedScore(R, Ri), 0);
 
   let html = "";
 
   if (hasScore && S !== null) {
-    const baseChange = K * (S - We);
-
-    // Bonus (§4.2): applies when m >= 3 and all opponents distinct
-    // m* = max(m, 4); bonus = max(0, K(S-We) - B*sqrt(m*))
-    const mStar = Math.max(m, 4);
+    const baseChange     = K * (S - We);
+    const mStar          = Math.max(m, 4);
     const bonusThreshold = BONUS_B * Math.sqrt(mStar);
-    const bonus  = m >= 3 ? Math.max(0, baseChange - bonusThreshold) : 0;
-    const total  = baseChange + bonus;
-    const R_new  = Math.round(R + total);
-    const delta  = R_new - R;
+    const bonus          = m >= 3 ? Math.max(0, baseChange - bonusThreshold) : 0;
+    const R_new          = Math.round(R + baseChange + bonus);
+    const delta          = R_new - R;
 
-    // Floor
-    const pf = peakFloor(Number.isFinite(peak) ? peak : NaN);
-    const floorVal = pf ? pf.floor : null;
+    const pf         = peakFloor(Number.isFinite(peak) ? peak : NaN);
+    const floorVal   = pf ? pf.floor : null;
     const belowFloor = floorVal !== null && R_new < floorVal;
-    const R_floored  = belowFloor ? floorVal : R_new;
-
+    const R_display  = belowFloor ? floorVal : R_new;
     const deltaClass = delta > 0 ? "delta-pos" : delta < 0 ? "delta-neg" : "delta-neu";
 
-    html = `
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-label">We (expected)</div>
-          <div class="stat-val">${f2(We)}</div>
-          <div class="stat-sub">of ${m} games</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">N* / Ne</div>
-          <div class="stat-val">${f2(Nstar)}</div>
-          <div class="stat-sub">Ne = ${f2(Ne)}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">K factor</div>
-          <div class="stat-val">${f2(K)}</div>
-          <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Base K(S−We)</div>
-          <div class="stat-val ${baseChange >= 0 ? "delta-pos" : "delta-neg"}">${baseChange >= 0 ? "+" : ""}${f2(baseChange)}</div>
-          <div class="stat-sub">S=${formatScore(S)}, We=${f2(We)}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Bonus (B=10)</div>
-          <div class="stat-val ${bonus > 0 ? "delta-pos" : "delta-neu"}">${bonus > 0 ? "+" : ""}${f2(bonus)}</div>
-          <div class="stat-sub">${m >= 3 ? `thresh = ${f2(bonusThreshold)}` : "m < 3, no bonus"}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">Projected Rating</div>
-          <div class="stat-val">${R_floored.toLocaleString()}</div>
-          <div class="stat-sub"><span class="${deltaClass}">${delta >= 0 ? "+" : ""}${delta}</span> from ${R.toLocaleString()}</div>
-        </div>
-      </div>`;
+    html = `<div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-label">Expected (We)</div>
+        <div class="stat-val">${f2(We)}</div>
+        <div class="stat-sub">of ${m} games</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">N* / Ne</div>
+        <div class="stat-val">${f2(Nstar)}</div>
+        <div class="stat-sub">Ne = ${f2(Ne)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K Factor</div>
+        <div class="stat-val">${f2(K)}</div>
+        <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Base Change</div>
+        <div class="stat-val ${baseChange >= 0 ? "delta-pos" : "delta-neg"}">${baseChange >= 0 ? "+" : ""}${f2(baseChange)}</div>
+        <div class="stat-sub">K × (S − We)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Bonus</div>
+        <div class="stat-val ${bonus > 0 ? "delta-pos" : "delta-neu"}">${bonus > 0 ? "+" : ""}${f2(bonus)}</div>
+        <div class="stat-sub">${m >= 3 ? `thresh ${f2(bonusThreshold)}` : "m < 3, none"}</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">New Rating</div>
+        <div class="stat-val">${R_display.toLocaleString()}</div>
+        <div class="stat-sub"><span class="${deltaClass}">${delta >= 0 ? "+" : ""}${delta}</span> from ${R.toLocaleString()}</div>
+      </div>
+    </div>`;
 
     if (belowFloor && pf) {
       html += `<div class="callout yellow"><span class="callout-icon">⚠</span>
-        <div class="callout-body">
-          <strong>Floor applied:</strong>
-          Projected result (${R_new}) is below your ${pf.label}. Rating cannot drop below ${pf.floor}.
-        </div></div>`;
-    } else if (!pf && Number.isFinite(R)) {
-      html += `<div class="callout yellow"><span class="callout-icon">ℹ</span>
-        <div class="callout-body">
-          Enter your <strong>Peak Rating</strong> above to check whether a floor applies.
-        </div></div>`;
+        <div class="callout-body"><strong>Floor applied (${pf.floor})</strong>Projected result (${R_new}) is below your ${pf.label}. Rating cannot drop below ${pf.floor}.</div></div>`;
+    } else if (!pf) {
+      html += `<div class="callout blue"><span class="callout-icon">ℹ</span>
+        <div class="callout-body">Enter your <strong>Peak Rating</strong> above to check whether a floor applies.</div></div>`;
     }
-
     if (bonus > 0) {
       html += `<div class="callout green"><span class="callout-icon">★</span>
-        <div class="callout-body">
-          <strong>Bonus triggered!</strong>
-          K(S−We) = ${f2(baseChange)} exceeds B√m* = ${f2(bonusThreshold)}.
-          Bonus = +${f2(bonus)} extra points for strong overperformance.
-        </div></div>`;
+        <div class="callout-body"><strong>Bonus triggered! +${f2(bonus)} pts</strong>K(S−We) = ${f2(baseChange)} exceeds the B√m* threshold of ${f2(bonusThreshold)}.</div></div>`;
     }
 
   } else {
-    // No score selected — show K, Ne, We
-    html = `
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-label">We (expected)</div>
-          <div class="stat-val">${f2(We)}</div>
-          <div class="stat-sub">of ${m} games</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">N* / Ne</div>
-          <div class="stat-val">${f2(Nstar)}</div>
-          <div class="stat-sub">Ne = ${f2(Ne)}</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">K factor</div>
-          <div class="stat-val">${f2(K)}</div>
-          <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
-        </div>
+    html = `<div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-label">Expected (We)</div>
+        <div class="stat-val">${f2(We)}</div>
+        <div class="stat-sub">of ${m} games</div>
       </div>
-      <div class="callout blue"><span class="callout-icon">ℹ</span>
-        <div class="callout-body">Select a <strong>Total Score</strong> above to see your projected rating.</div>
-      </div>`;
+      <div class="stat-box">
+        <div class="stat-label">N* / Ne</div>
+        <div class="stat-val">${f2(Nstar)}</div>
+        <div class="stat-sub">Ne = ${f2(Ne)}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K Factor</div>
+        <div class="stat-val">${f2(K)}</div>
+        <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
+      </div>
+    </div>
+    <div class="callout blue"><span class="callout-icon">ℹ</span>
+      <div class="callout-body">Select a <strong>Total Score</strong> above to see your projected rating.</div>
+    </div>`;
   }
 
   ratingContent.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RECALC (called on every input change)
+// RECALC
 // ═══════════════════════════════════════════════════════════════════════════
 
 function recalc() {
@@ -806,10 +1050,7 @@ function recalc() {
   const score   = inpScore.value;
 
   refreshScoreSelect(m);
-  // Restore selection after refresh
-  if (score !== "" && parseFloat(score) <= m) {
-    inpScore.value = score;
-  }
+  if (score !== "" && parseFloat(score) <= m) inpScore.value = score;
 
   renderNorms(ratings, m, inpScore.value);
   renderRating(ratings, m, inpScore.value);
@@ -821,11 +1062,10 @@ function recalc() {
 
 btnAdd.addEventListener("click", addRow);
 inpScore.addEventListener("change", recalc);
-inpR.addEventListener("input",     recalc);
-inpN.addEventListener("input",     recalc);
-inpPeak.addEventListener("input",  recalc);
+inpR.addEventListener("input",   recalc);
+inpN.addEventListener("input",   recalc);
+inpPeak.addEventListener("input", recalc);
 
-// Initialize with 5 rows
 for (let i = 0; i < 5; i++) makeRow();
 renderGrid();
 recalc();
