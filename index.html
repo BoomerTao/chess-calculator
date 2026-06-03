@@ -545,6 +545,69 @@ details[open] summary::before { transform: rotate(90deg); }
 .footnote p { margin-bottom: .3rem; }
 .footnote p:last-child { margin-bottom: 0; }
 
+/* ── System divider ──────────────────────────────────────────────── */
+.system-section { margin-top: 2rem; }
+.system-label {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 1.25rem;
+}
+.system-label-line { flex: 1; height: 1px; background: var(--border-med); }
+.system-label-text {
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+.cross-note {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber-bd);
+  border-radius: var(--radius-sm);
+  padding: .6rem .9rem;
+  font-size: .775rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+  box-shadow: var(--shadow-sm);
+}
+.fide-auto-fields { display: none; }
+.fide-auto-fields.visible { display: grid; }
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding-top: 1.3rem;
+}
+.checkbox-field input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+.checkbox-field label {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: .875rem !important;
+  color: var(--ink) !important;
+  cursor: pointer;
+  font-weight: 500 !important;
+}
+.cap-note {
+  display: inline-block;
+  font-size: .68rem;
+  background: var(--amber-lt);
+  color: var(--amber);
+  border: 1px solid var(--amber-bd);
+  border-radius: 3px;
+  padding: .1rem .35rem;
+  margin-top: .2rem;
+}
+
 /* ── Responsive tweaks ────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .site-header { padding: 1.5rem 1rem 1.35rem; }
@@ -694,6 +757,96 @@ details[open] summary::before { transform: rotate(90deg); }
     <p><strong>Floors:</strong> class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
   </div>
 </details>
+
+
+  <!-- ══════════════════════════════════════════════════ CROSS-SYSTEM NOTE -->
+  <p class="cross-note">
+    ℹ <strong>US Chess and FIDE are separate, non-interchangeable rating systems.</strong>
+    A player's US Chess rating is typically ~50–100 points higher than their FIDE rating.
+    Enter US Chess ratings in the tools above and FIDE ratings in the tool below — do not mix them.
+  </p>
+
+  <!-- ══════════════════════════════════════════════════ FIDE SECTION -->
+  <div class="system-section">
+    <div class="system-label">
+      <div class="system-label-line"></div>
+      <span class="system-label-text">FIDE Rating Change</span>
+      <div class="system-label-line"></div>
+    </div>
+
+    <!-- FIDE inputs -->
+    <div class="card">
+      <div class="card-title">
+        <span class="card-title-icon">⚙</span>
+        FIDE Event Inputs
+        <span class="badge" id="fide-game-badge">5 games</span>
+      </div>
+
+      <div class="input-grid" id="fide-opp-grid">
+        <span class="col-label">#</span>
+        <span class="col-label">Opponent FIDE Rating</span>
+        <span class="col-label"></span>
+      </div>
+
+      <button class="btn-add" id="fide-btn-add">+ Add Opponent</button>
+
+      <hr class="meta-divider">
+
+      <div class="meta-row">
+        <div class="meta-field">
+          <label for="fide-inp-score">Total Score (S)</label>
+          <select id="fide-inp-score"></select>
+        </div>
+        <div class="meta-field">
+          <label for="fide-inp-r">Your FIDE Rating (R)</label>
+          <input type="number" id="fide-inp-r" placeholder="e.g. 1600" min="1000" max="3000" step="1">
+        </div>
+        <div class="meta-field">
+          <label for="fide-inp-k">K-Factor</label>
+          <select id="fide-inp-k">
+            <option value="auto">Auto-detect</option>
+            <option value="40">K = 40</option>
+            <option value="20">K = 20</option>
+            <option value="10">K = 10</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Auto-detect extra fields, hidden unless auto is selected -->
+      <div class="meta-row fide-auto-fields" id="fide-auto-fields" style="margin-top:.65rem">
+        <div class="meta-field">
+          <label for="fide-inp-games">Prior FIDE Games</label>
+          <input type="number" id="fide-inp-games" placeholder="e.g. 25" min="0" max="9999" step="1">
+        </div>
+        <div class="meta-field checkbox-field">
+          <input type="checkbox" id="fide-inp-2400">
+          <label for="fide-inp-2400">Ever published at 2400+</label>
+        </div>
+        <div class="meta-field checkbox-field">
+          <input type="checkbox" id="fide-inp-youth">
+          <label for="fide-inp-youth">Under 18 &amp; rated below 2300</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- FIDE output -->
+    <div class="card">
+      <div class="panel-header">
+        <span class="panel-icon blue">♟</span>
+        <div>
+          <div class="panel-title">FIDE Rating Change</div>
+          <div class="panel-sub">Estimated post-event FIDE rating</div>
+        </div>
+      </div>
+      <div id="fide-output">
+        <div class="empty">Enter FIDE opponent ratings, your rating, and score above.</div>
+      </div>
+      <div class="footnote">
+        <p>⚠ Uses the logistic formula as an approximation of FIDE's official lookup table (§8.1.2, FIDE Handbook B.02, effective 1 March 2024). FIDE's official figure uses the rounded table and is computed over a rating period — results may differ slightly.</p>
+        <p>⚠ The 400-point cap on rating differences applies for players rated below 2650 (§8.3.1, effective 1 October 2025). K-factor rules per §8.3.3.</p>
+      </div>
+    </div>
+  </div>
 
 </div><!-- /.page-body -->
 
@@ -1067,6 +1220,324 @@ inpPeak.addEventListener("input", recalc);
 for (let i = 0; i < 5; i++) makeRow();
 renderGrid();
 recalc();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIDE RATING CALCULATOR
+// Source: FIDE Handbook B.02, effective 1 March 2024
+// https://handbook.fide.com/chapter/B022024
+// ═══════════════════════════════════════════════════════════════════════════
+
+// FIDE expected score — SEPARATE from the US Chess helper above.
+// Approximates the FIDE lookup table (§8.1.2).
+// 400-point cap on D for players rated below 2650 (§8.3.1, eff. 1 Oct 2025).
+function fideExpectedScore(playerRating, opponentRating) {
+  let D = playerRating - opponentRating;
+  if (playerRating < 2650) {
+    if (D >  400) D =  400;
+    if (D < -400) D = -400;
+  }
+  return 1 / (1 + Math.pow(10, -D / 400));
+}
+
+// FIDE rounding: nearest integer; 0.5 rounds away from zero (§8.3.4).
+function fideRound(x) {
+  return Math.sign(x) * Math.round(Math.abs(x));
+}
+
+// FIDE K-factor auto-detect (§8.3.3).
+// Returns { K, baseK, rule, capped, capNote }.
+function fideAutoKFactor(rating, priorGames, everReached2400, youthUnder2300, m) {
+  let baseK, rule;
+  const ng = Number.isFinite(priorGames) ? priorGames : null;
+
+  if (everReached2400) {
+    baseK = 10;
+    rule  = "Published rating reached 2400 — K=10 is permanent (§8.3.3)";
+  } else if (ng !== null && ng < 30) {
+    baseK = 40;
+    rule  = `New to FIDE list — ${ng} of 30 prior games completed (§8.3.3)`;
+  } else if (youthUnder2300) {
+    baseK = 40;
+    rule  = "Under 18 with rating below 2300 (§8.3.3)";
+  } else {
+    baseK = 20;
+    rule  = ng === null
+      ? "Standard tier assumed — enter prior games to verify K=40 eligibility (§8.3.3)"
+      : "Standard tier — rated below 2400 (§8.3.3)";
+  }
+
+  // K × n ≤ 700 cap (§8.3.3)
+  if (baseK * m > 700) {
+    const Kcapped = Math.floor(700 / m);
+    return { K: Kcapped, baseK, rule, capped: true,
+             capNote: `K×m cap applied: ${baseK}×${m} > 700, reduced to ${Kcapped}` };
+  }
+  return { K: baseK, baseK, rule, capped: false, capNote: "" };
+}
+
+// ── FIDE state ──────────────────────────────────────────────────────────────
+let fideRows = [];
+
+const fideOppGrid    = document.getElementById("fide-opp-grid");
+const fideGameBadge  = document.getElementById("fide-game-badge");
+const fideBtnAdd     = document.getElementById("fide-btn-add");
+const fideInpScore   = document.getElementById("fide-inp-score");
+const fideInpR       = document.getElementById("fide-inp-r");
+const fideInpK       = document.getElementById("fide-inp-k");
+const fideInpGames   = document.getElementById("fide-inp-games");
+const fideInp2400    = document.getElementById("fide-inp-2400");
+const fideInpYouth   = document.getElementById("fide-inp-youth");
+const fideAutoFields = document.getElementById("fide-auto-fields");
+const fideOutput     = document.getElementById("fide-output");
+
+function makeFideRow() {
+  const numEl = document.createElement("span");
+  numEl.className = "row-num";
+
+  const inputEl = document.createElement("input");
+  inputEl.type = "number";
+  inputEl.min = 1000; inputEl.max = 3000; inputEl.step = 1;
+  inputEl.placeholder = "e.g. 1550";
+  inputEl.addEventListener("input", () => { validateFideInput(inputEl); fideRecalc(); });
+
+  const removeEl = document.createElement("button");
+  removeEl.className = "btn-remove";
+  removeEl.title = "Remove";
+  removeEl.textContent = "✕";
+  removeEl.addEventListener("click", () => removeFideRow(rowObj));
+
+  const rowObj = { numEl, inputEl, removeEl };
+  fideRows.push(rowObj);
+  return rowObj;
+}
+
+function validateFideInput(el) {
+  const v = parseFloat(el.value);
+  const ok = el.value === "" || (Number.isFinite(v) && v >= 1000 && v <= 3000);
+  el.classList.toggle("invalid", !ok);
+}
+
+function renderFideGrid() {
+  while (fideOppGrid.children.length > 3) fideOppGrid.removeChild(fideOppGrid.lastChild);
+  fideRows.forEach((r, i) => {
+    r.numEl.textContent = i + 1;
+    fideOppGrid.appendChild(r.numEl);
+    fideOppGrid.appendChild(r.inputEl);
+    fideOppGrid.appendChild(r.removeEl);
+  });
+  const m = fideRows.length;
+  fideGameBadge.textContent = m === 1 ? "1 game" : `${m} games`;
+}
+
+function addFideRow() {
+  makeFideRow();
+  renderFideGrid();
+  fideRecalc();
+  fideRows[fideRows.length - 1].inputEl.focus();
+}
+
+function removeFideRow(rowObj) {
+  if (fideRows.length === 1) return;
+  fideRows = fideRows.filter(r => r !== rowObj);
+  renderFideGrid();
+  fideRecalc();
+}
+
+function refreshFideScoreSelect(m) {
+  const prev = fideInpScore.value;
+  fideInpScore.innerHTML = '<option value="">—</option>';
+  for (let s = 0; s <= m; s += 0.5) {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s.toFixed(1);
+    if (String(s) === prev) opt.selected = true;
+    fideInpScore.appendChild(opt);
+  }
+}
+
+function fideValidRatings() {
+  return fideRows
+    .map(r => parseFloat(r.inputEl.value))
+    .filter(v => Number.isFinite(v) && v >= 1000 && v <= 3000);
+}
+
+function renderFideOutput() {
+  const ratings = fideValidRatings();
+  const m       = fideRows.length;
+  const R       = parseFloat(fideInpR.value);
+  const score   = fideInpScore.value;
+  const kMode   = fideInpK.value;
+
+  if (!Number.isFinite(R)) {
+    fideOutput.innerHTML = '<div class="empty">Enter your FIDE rating above.</div>';
+    return;
+  }
+  if (ratings.length === 0) {
+    fideOutput.innerHTML = '<div class="empty">Enter opponent FIDE ratings above.</div>';
+    return;
+  }
+
+  // Resolve K
+  let kInfo;
+  if (kMode === "auto") {
+    const priorGames  = parseFloat(fideInpGames.value);
+    const everReached = fideInp2400.checked;
+    const youth       = fideInpYouth.checked;
+    kInfo = fideAutoKFactor(R, priorGames, everReached, youth, m);
+  } else {
+    const manualK  = parseInt(kMode);
+    const capNeeded = manualK * m > 700;
+    const Kfinal   = capNeeded ? Math.floor(700 / m) : manualK;
+    kInfo = { K: Kfinal, baseK: manualK, rule: "Manual override",
+               capped: capNeeded,
+               capNote: capNeeded ? `K×m cap: ${manualK}×${m} > 700, reduced to ${Kfinal}` : "" };
+  }
+  const { K, rule, capped, capNote } = kInfo;
+
+  // Per-game expected scores
+  const games = ratings.map(opp => {
+    const rawD     = R - opp;
+    const capApplied = R < 2650 && Math.abs(rawD) > 400;
+    const D        = R < 2650 ? Math.max(-400, Math.min(400, rawD)) : rawD;
+    const E        = 1 / (1 + Math.pow(10, -D / 400));
+    return { opp, rawD, D, capApplied, E };
+  });
+
+  const We      = games.reduce((sum, g) => sum + g.E, 0);
+  const hasScore = score !== "" && score !== null;
+  const S        = hasScore ? parseFloat(score) : null;
+
+  let html = "";
+
+  if (hasScore && S !== null) {
+    const rawDelta = K * (S - We);
+    const deltaR   = fideRound(rawDelta);
+    const R_new    = R + deltaR;
+    const dClass   = deltaR > 0 ? "delta-pos" : deltaR < 0 ? "delta-neg" : "delta-neu";
+
+    html = `<div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-label">Expected (We)</div>
+        <div class="stat-val">${f2(We)}</div>
+        <div class="stat-sub">of ${m} games</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K-Factor</div>
+        <div class="stat-val">${K}</div>
+        <div class="stat-sub" style="font-size:.67rem;line-height:1.4">${rule}${capped ? `<br><span class="cap-note">${capNote}</span>` : ""}</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Rating Change</div>
+        <div class="stat-val ${dClass}">${deltaR >= 0 ? "+" : ""}${deltaR}</div>
+        <div class="stat-sub">K × (S − We)</div>
+      </div>
+      <div class="stat-box highlight">
+        <div class="stat-label">New Rating</div>
+        <div class="stat-val">${R_new.toLocaleString()}</div>
+        <div class="stat-sub"><span class="${dClass}">${deltaR >= 0 ? "+" : ""}${deltaR}</span> from ${R.toLocaleString()}</div>
+      </div>
+    </div>`;
+
+    // Per-game breakdown table
+    html += `<div class="table-wrap" style="margin-top:.9rem">
+      <table>
+        <thead><tr>
+          <th>Game</th>
+          <th class="r">Opp Rating</th>
+          <th class="r">Diff (D)</th>
+          <th class="r">Capped D</th>
+          <th class="r">Expected E</th>
+        </tr></thead>
+        <tbody>`;
+    games.forEach((g, i) => {
+      const sign = v => (v >= 0 ? "+" : "") + v;
+      html += `<tr>
+        <td>${i + 1}</td>
+        <td class="r">${g.opp}</td>
+        <td class="r">${sign(g.rawD)}</td>
+        <td class="r">${g.capApplied
+          ? `<span style="color:var(--amber);font-weight:600">${sign(g.D)} ⚠</span>`
+          : sign(g.D)}</td>
+        <td class="r">${f2(g.E)}</td>
+      </tr>`;
+    });
+    html += `<tr style="font-weight:700;background:var(--surface-2)">
+        <td colspan="4" class="r" style="color:var(--ink-faint);font-size:.78rem;font-weight:600">Total We</td>
+        <td class="r">${f2(We)}</td>
+      </tr></tbody>
+      </table>
+    </div>`;
+
+    // Result callout
+    const callClass = deltaR > 0 ? "green" : deltaR < 0 ? "red" : "blue";
+    const callIcon  = deltaR > 0 ? "↑" : deltaR < 0 ? "↓" : "→";
+    const callMsg   = deltaR > 0
+      ? `<strong>Rating increases by +${deltaR}</strong>${R.toLocaleString()} → ${R_new.toLocaleString()}`
+      : deltaR < 0
+      ? `<strong>Rating decreases by ${deltaR}</strong>${R.toLocaleString()} → ${R_new.toLocaleString()}`
+      : `<strong>No rating change</strong>Score exactly matched expectation.`;
+    html += `<div class="callout ${callClass}" style="margin-top:.85rem">
+      <span class="callout-icon">${callIcon}</span>
+      <div class="callout-body">${callMsg}</div>
+    </div>`;
+
+    // Floor warning (§7.2.1)
+    if (R_new < 1400) {
+      html += `<div class="callout yellow" style="margin-top:.65rem">
+        <span class="callout-icon">⚠</span>
+        <div class="callout-body"><strong>Below FIDE floor</strong>Ratings below 1400 are shown as unrated on the next list (§7.2.1).</div>
+      </div>`;
+    }
+
+  } else {
+    // No score yet — show partial info
+    html = `<div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-label">Expected (We)</div>
+        <div class="stat-val">${f2(We)}</div>
+        <div class="stat-sub">of ${m} games</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">K-Factor</div>
+        <div class="stat-val">${K}</div>
+        <div class="stat-sub" style="font-size:.67rem;line-height:1.4">${rule}${capped ? `<br><span class="cap-note">${capNote}</span>` : ""}</div>
+      </div>
+    </div>
+    <div class="callout blue">
+      <span class="callout-icon">ℹ</span>
+      <div class="callout-body">Select a <strong>Total Score</strong> above to see your projected FIDE rating.</div>
+    </div>`;
+  }
+
+  fideOutput.innerHTML = html;
+}
+
+function fideRecalc() {
+  const m     = fideRows.length;
+  const score = fideInpScore.value;
+
+  refreshFideScoreSelect(m);
+  if (score !== "" && parseFloat(score) <= m) fideInpScore.value = score;
+
+  // Show auto-detect fields only when auto is selected
+  fideAutoFields.classList.toggle("visible", fideInpK.value === "auto");
+
+  renderFideOutput();
+}
+
+// FIDE wiring
+fideBtnAdd.addEventListener("click",    addFideRow);
+fideInpScore.addEventListener("change", fideRecalc);
+fideInpR.addEventListener("input",      fideRecalc);
+fideInpK.addEventListener("change",     fideRecalc);
+fideInpGames.addEventListener("input",  fideRecalc);
+fideInp2400.addEventListener("change",  fideRecalc);
+fideInpYouth.addEventListener("change", fideRecalc);
+
+// Init FIDE with 5 rows
+for (let i = 0; i < 5; i++) makeFideRow();
+renderFideGrid();
+fideRecalc();
 </script>
 </body>
 </html>
