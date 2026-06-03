@@ -566,7 +566,7 @@ details[open] summary::before { transform: rotate(90deg); }
     <p class="site-subtitle">Norm requirements &amp; rating projection — one field set, both panels update live.</p>
     <div class="site-pills">
       <span class="site-pill">Official formula</span>
-      <span class="site-pill">April 2026 spec</span>
+      <span class="site-pill">March 2024 spec</span>
       <span class="site-pill">No sign-in needed</span>
     </div>
   </div>
@@ -668,7 +668,7 @@ details[open] summary::before { transform: rotate(90deg); }
       </div>
 
       <div class="footnote">
-        <p>⚠ Approximating formula (Glickman &amp; Doan, April 2026 spec §3–4.2). Official algorithm runs two iterations with updated opponent ratings — may differ slightly.</p>
+        <p>⚠ Approximating formula based on <a href="https://new.uschess.org/sites/default/files/media/documents/us_chess_rating_system_specs-2024-03-01.pdf" target="_blank" rel="noopener" style="color:inherit">"The US Chess Rating System"</a> (Glickman &amp; Doan, revised March 2024). Official algorithm runs two iterations with updated opponent ratings — results may differ slightly.</p>
         <p>⚠ Bonus assumes all opponents in this event are distinct. Enter peak rating to check floor.</p>
       </div>
     </div>
@@ -684,7 +684,7 @@ details[open] summary::before { transform: rotate(90deg); }
 
     <p><strong>Norm panel</strong> — for each title level Y, <em>expectedTotal(Y)</em> sums <code>expectedScore(Y, Rᵢ)</code> over all opponents. A norm requires your actual score S to be <em>strictly greater than</em> expectedTotal + 1.00. Since chess scores are multiples of 0.5, the minimum qualifying score is <code>minScore = (⌊(expectedTotal + 1.0) / 0.5⌋ + 1) × 0.5</code>. Verify: expected = 2.5 → threshold = 3.5 → minScore = <strong>4.0</strong>.</p>
 
-    <p><strong>Rating panel</strong> (Glickman &amp; Doan, April 6, 2026 spec, §3–4.2):</p>
+    <p><strong>Rating panel</strong> — based on <a href="https://new.uschess.org/sites/default/files/media/documents/us_chess_rating_system_specs-2024-03-01.pdf" target="_blank" rel="noopener">"The US Chess Rating System"</a> (Glickman &amp; Doan, revised March 2024):</p>
     <p>• <strong>N*</strong> = 50 / √(0.662 + 0.00000739 × (2569 − R)²) if R ≤ 2355, else 50</p>
     <p>• <strong>Ne</strong> = min(N, N*) — effective game count (caps at 50; lower for lower-rated players)</p>
     <p>• <strong>K</strong> = 800 / (Ne + m)</p>
@@ -692,7 +692,7 @@ details[open] summary::before { transform: rotate(90deg); }
     <p>• <strong>Bonus</strong> (m ≥ 3, distinct opponents): m* = max(m, 4); bonus = max(0, K(S−We) − 10√m*)</p>
     <p>• <strong>R_new</strong> = R + K(S − We) + bonus, rounded to nearest integer</p>
 
-    <p><strong>Floors</strong> (§5): class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
+    <p><strong>Floors:</strong> class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
   </div>
 </details>
 
@@ -700,8 +700,8 @@ details[open] summary::before { transform: rotate(90deg); }
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
-// CONSTANTS  (source: Glickman & Doan, "The US Chess Rating System"
-//             April 6, 2026, sections 3 and 4.2)
+// CONSTANTS  (source: Glickman & Doan, "The US Chess Rating System", revised March 2024
+//             https://new.uschess.org/sites/default/files/media/documents/us_chess_rating_system_specs-2024-03-01.pdf)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const NORM_LEVELS = [
@@ -715,7 +715,7 @@ const NORM_LEVELS = [
 ];
 
 const CLASS_FLOORS = [1200,1300,1400,1500,1600,1700,1800,1900,2000,2100];
-const BONUS_B = 10; // §4.2, effective January 1, 2025
+const BONUS_B = 10; // effective January 1, 2025
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SHARED HELPER  — player rating is an ARGUMENT, never hardcoded
