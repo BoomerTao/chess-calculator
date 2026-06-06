@@ -755,6 +755,8 @@ details[open] summary::before { transform: rotate(90deg); }
     <p>• <strong>R_new</strong> = R + K(S − We) + bonus, rounded to nearest integer</p>
 
     <p><strong>Floors:</strong> class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
+
+    <p><strong>Performance rating</strong> (shown in both systems) is the single rating Rₚ at which your expected score against this exact field equals your actual score — i.e. <code>Σ expected(Rₚ, oppᵢ) = S</code>, solved numerically. It depends only on the opponents and your score, not on your own current rating. It is undefined (±∞) for a clean sweep or a total loss. This uses the uncapped logistic formula, so FIDE's official table-based tournament performance may differ slightly.</p>
   </div>
 </details>
 
@@ -989,6 +991,30 @@ function nStar(R) {
   return 50 / Math.sqrt(0.662 + 0.00000739 * Math.pow(2569 - R, 2));
 }
 
+// ── Performance rating (system-agnostic) ──────────────────────────────────────
+// The single rating Rp at which a player's expected score against this exact
+// field equals their actual score: Σ expected(Rp, opp_i) = S.
+// Uses the standard logistic expected-score (uncapped), solved by bisection.
+// Undefined (±∞) for a clean sweep (S=0) or perfect score (S=m).
+function perfExpected(perfRating, opponentRating) {
+  return 1 / (1 + Math.pow(10, (opponentRating - perfRating) / 400));
+}
+
+function performanceRating(ratings, score) {
+  const n = ratings.length;
+  if (n === 0 || !Number.isFinite(score)) return { value: null, note: null };
+  if (score <= 0)  return { value: null, note: `0 / ${n} — performance is unbounded (−∞)` };
+  if (score >= n)  return { value: null, note: `${score.toFixed(1)} / ${n} — performance is unbounded (+∞)` };
+
+  let lo = 100, hi = 3500;
+  for (let i = 0; i < 80; i++) {
+    const mid = (lo + hi) / 2;
+    const exp = ratings.reduce((s, opp) => s + perfExpected(mid, opp), 0);
+    if (exp < score) lo = mid; else hi = mid;
+  }
+  return { value: Math.round((lo + hi) / 2), note: null };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // NORM PANEL
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1066,6 +1092,15 @@ function renderNorms(ratings, m, score) {
       <div class="callout-body"><strong>Highest achievable: ${ba.name}</strong>Needs ${formatScore(ba.minSc)} of ${m} (${ba.Y.toLocaleString()} level).</div></div>`;
   }
   if (hasScore) {
+    const perf = performanceRating(ratings, S);
+    if (perf.value !== null) {
+      callHtml += `<div class="callout blue"><span class="callout-icon">🎯</span>
+        <div class="callout-body"><strong>Performance rating: ${perf.value.toLocaleString()}</strong>The US Chess rating at which ${formatScore(S)} / ${m} would be your expected score against this field.</div></div>`;
+    } else if (perf.note) {
+      callHtml += `<div class="callout blue"><span class="callout-icon">🎯</span>
+        <div class="callout-body"><strong>Performance rating: —</strong>${perf.note}.</div></div>`;
+    }
+
     if (bestEarned >= 0) {
       const be = nrows[bestEarned];
       callHtml += `<div class="callout green"><span class="callout-icon">✓</span>
@@ -1414,6 +1449,7 @@ function renderFideOutput() {
     const deltaR   = fideRound(rawDelta);
     const R_new    = R + deltaR;
     const dClass   = deltaR > 0 ? "delta-pos" : deltaR < 0 ? "delta-neg" : "delta-neu";
+    const fperf    = performanceRating(ratings, S);
 
     html = `<div class="stat-grid">
       <div class="stat-box">
@@ -1430,6 +1466,11 @@ function renderFideOutput() {
         <div class="stat-label">Rating Change</div>
         <div class="stat-val ${dClass}">${deltaR >= 0 ? "+" : ""}${deltaR}</div>
         <div class="stat-sub">K × (S − We)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Performance</div>
+        <div class="stat-val">${fperf.value !== null ? fperf.value.toLocaleString() : "—"}</div>
+        <div class="stat-sub">${fperf.value !== null ? "this event" : "unbounded"}</div>
       </div>
       <div class="stat-box highlight">
         <div class="stat-label">New Rating</div>
