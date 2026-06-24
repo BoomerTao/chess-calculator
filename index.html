@@ -646,11 +646,16 @@ details[open] summary::before { transform: rotate(90deg); }
 
   <div class="input-grid" id="opp-grid">
     <span class="col-label">#</span>
-    <span class="col-label">Opponent Rating</span>
+    <span class="col-label">Opponent Rating <span style="font-weight:400;text-transform:none;letter-spacing:0">(post-event)</span></span>
     <span class="col-label"></span>
   </div>
 
   <button class="btn-add" id="btn-add">+ Add Opponent</button>
+
+  <div id="bye-field" class="checkbox-field" style="display:none;padding-top:.7rem">
+    <input type="checkbox" id="inp-bye">
+    <label for="inp-bye">4th round was a bye / forfeit (norm then needs to exceed expectation by +2.0)</label>
+  </div>
 
   <hr class="meta-divider">
 
@@ -693,7 +698,7 @@ details[open] summary::before { transform: rotate(90deg); }
           <thead>
             <tr>
               <th>Level</th>
-              <th class="r">Expected</th>
+              <th class="r" title="Σ Cᵢ — sum of official norm coefficients">Expected (C<sub>T</sub>)</th>
               <th class="r">Threshold</th>
               <th class="r">Min Score</th>
               <th class="c">Status</th>
@@ -708,7 +713,7 @@ details[open] summary::before { transform: rotate(90deg); }
       <div id="norm-callout"></div>
 
       <div class="footnote">
-        <p>⚠ Uses the standard logistic formula. US Chess's iterative algorithm may differ — treat as an estimate.</p>
+        <p>⚠ Uses the official US Chess norm coefficient C<sub>i</sub> (piecewise) on each opponent's <strong>post-event</strong> rating, compared at full precision. A norm needs the score to <em>strictly exceed</em> C<sub>T</sub> + 1.0 (+2.0 with a 4th-round bye/forfeit in a 3-game event).</p>
         <p>⚠ A <em>title</em> requires <strong>five norms</strong> at that level. CM (2000+) also requires reaching that published rating.</p>
       </div>
     </div>
@@ -742,9 +747,11 @@ details[open] summary::before { transform: rotate(90deg); }
 <details>
   <summary>How this works</summary>
   <div class="details-body">
-    <p><strong>Shared helper:</strong> <code>expectedScore(playerRating, oppRating) = 1 / (1 + 10^((opp − player) / 400))</code> — the standard logistic formula used by both panels.</p>
+    <p><strong>Logistic helper</strong> <code>expectedScore(playerRating, oppRating) = 1 / (1 + 10^((opp − player) / 400))</code> is the standard Elo expected score. It is used by the rating projection and performance rating — <em>not</em> by the norm panel.</p>
 
-    <p><strong>Norm panel</strong> — for each title level Y, <em>expectedTotal(Y)</em> sums <code>expectedScore(Y, Rᵢ)</code> over all opponents. A norm requires your actual score S to be <em>strictly greater than</em> expectedTotal + 1.00. Since chess scores are multiples of 0.5, the minimum qualifying score is <code>minScore = (⌊(expectedTotal + 1.0) / 0.5⌋ + 1) × 0.5</code>. Verify: expected = 2.5 → threshold = 3.5 → minScore = <strong>4.0</strong>.</p>
+    <p><strong>Norm panel</strong> uses the official US Chess norm coefficient, not Elo. For title level Y and an opponent's <strong>post-event</strong> rating Rᵢ, let Δ = Y − Rᵢ; then <code>Cᵢ = 0</code> if Δ ≤ −400, <code>0.5 + Δ/800</code> if −400 &lt; Δ ≤ 0, <code>0.5 + Δ/400</code> if 0 &lt; Δ ≤ 200, and <code>1</code> if Δ &gt; 200. Sum to get <code>C<sub>T</sub> = Σ Cᵢ</code>. A norm is earned when the score <em>strictly exceeds</em> C<sub>T</sub> + 1.0 (or + 2.0 if a 3-game event had a 4th-round bye/forfeit). The comparison is made at full floating-point precision; values are rounded only for display.</p>
+
+    <p><strong>Points-needed diagnostic</strong> — when a norm is missed, a counterfactual estimate of how much stronger the (fixed) field would have needed to be: the uniform gap per opponent, and the cheapest single-opponent bump, both found by binary search since C<sub>T</sub> decreases monotonically with opponent ratings.</p>
 
     <p><strong>Rating panel</strong> — based on the official US Chess rating system specification:</p>
     <p>• <strong>N*</strong> = 50 / √(0.662 + 0.00000739 × (2569 − R)²) if R ≤ 2355, else 50</p>
@@ -758,6 +765,11 @@ details[open] summary::before { transform: rotate(90deg); }
 
     <p><strong>Performance rating</strong> (shown in both systems) is the single rating Rₚ at which your expected score against this exact field equals your actual score — i.e. <code>Σ expected(Rₚ, oppᵢ) = S</code>, solved numerically. It depends only on the opponents and your score, not on your own current rating. It is undefined (±∞) for a clean sweep or a total loss. This uses the uncapped logistic formula, so FIDE's official table-based tournament performance may differ slightly.</p>
   </div>
+</details>
+
+<details id="selftest-details">
+  <summary>Developer self-tests (norm logic)</summary>
+  <div class="details-body" id="selftest-body">Running…</div>
 </details>
 
 
@@ -1019,25 +1031,107 @@ function performanceRating(ratings, score) {
 // NORM PANEL
 // ═══════════════════════════════════════════════════════════════════════════
 
-function computeNorms(ratings, m, score) {
+// ── Official US Chess norm coefficient Cᵢ (piecewise) ─────────────────────────
+// For title level Y and an opponent's POST-EVENT rating Ri, with Δ = Y − Ri:
+//     Δ ≤ −400        → 0
+//     −400 < Δ ≤ 0    → 0.5 + Δ/800
+//     0 < Δ ≤ 200     → 0.5 + Δ/400
+//     Δ > 200         → 1
+// This is the official norm coefficient — NOT the Elo expected score. US Chess
+// norms use each opponent's POST-EVENT rating (unlike FIDE, which uses the
+// start-of-event rating). The Elo expectedScore() above is used ONLY by the
+// rating-change projection and performance rating, never here.
+function normCi(Y, Ri) {
+  const d = Y - Ri;
+  if (d <= -400) return 0;
+  if (d <= 0)    return 0.5 + d / 800;
+  if (d <= 200)  return 0.5 + d / 400;
+  return 1;
+}
+
+function normCT(Y, ratings) {
+  return ratings.reduce((sum, Ri) => sum + normCi(Y, Ri), 0);
+}
+
+// Core norm decision at FULL floating-point precision (no pre-rounding).
+// A norm is earned iff the score STRICTLY exceeds CT + requiredMargin.
+function normResult(Y, ratings, score, requiredMargin) {
+  const CT = normCT(Y, ratings);
+  const threshold = CT + requiredMargin;
+  const hasScore = Number.isFinite(score);
+  const earned = hasScore && score > threshold;     // strict > , full precision
+  const marginAbove = hasScore ? score - CT : null; // amount scored above expectation
+  return { Y, CT, threshold, requiredMargin, earned, marginAbove };
+}
+
+// ── "Points needed" diagnostic (counterfactual) ───────────────────────────────
+// CT is monotonically DECREASING in opponent ratings, so binary search converges
+// reliably and handles the piecewise kink at Y automatically. A norm clears when
+// CT < score − requiredMargin (the "target").
+
+// Uniform gap: smallest N such that raising EVERY opponent by N clears the norm.
+function uniformGapNeeded(Y, ratings, score, requiredMargin) {
+  const target = score - requiredMargin;
+  if (!(target > 0)) return Infinity;                 // unreachable by opponents alone
+  if (normCT(Y, ratings) < target) return 0;          // already clear
+  let lo = 0, hi = 4000;                              // +4000 drives every Cᵢ to 0
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    const ct = normCT(Y, ratings.map(r => r + mid));
+    if (ct < target) hi = mid; else lo = mid;
+  }
+  return hi;
+}
+
+// Cheapest single opponent: minimum points ONE opponent (others fixed) would need
+// to gain to clear the norm. Sub-Y opponents are cheaper (Cᵢ slope 1/400 below Y
+// vs 1/800 above it), and the per-opponent search surfaces that automatically.
+function cheapestSingleBump(Y, ratings, score, requiredMargin) {
+  const target = score - requiredMargin;
+  if (!(target > 0)) return null;
+  if (normCT(Y, ratings) < target) return null;       // already clear
+  let best = null;
+  ratings.forEach((r, idx) => {
+    const others = ratings.reduce((s, rr, j) => (j === idx ? s : s + normCi(Y, rr)), 0);
+    const need = target - others;                     // this opponent's Cᵢ must drop below `need`
+    if (!(need > 0)) return;                           // even Cᵢ=0 here leaves CT ≥ target
+    let lo = 0, hi = 4000;
+    for (let i = 0; i < 60; i++) {
+      const mid = (lo + hi) / 2;
+      if (normCi(Y, r + mid) < need) hi = mid; else lo = mid;
+    }
+    if (best === null || hi < best.points) best = { points: hi, index: idx, oppRating: r };
+  });
+  return best;
+}
+
+// A norm normally requires exceeding expectation by > 1.0. Special case: if only
+// 3 games were played and the 4th is a bye/forfeit, the requirement is > 2.0.
+function getRequiredMargin(m) {
+  const bye = document.getElementById("inp-bye");
+  return (m === 3 && bye && bye.checked) ? 2.0 : 1.0;
+}
+
+function computeNorms(ratings, m, score, requiredMargin) {
   const hasScore = score !== "" && score !== null && score !== undefined;
   const S = hasScore ? parseFloat(score) : null;
   let bestAchievable = -1, bestEarned = -1;
 
   const nrows = NORM_LEVELS.map(([name, Y]) => {
-    const expTotal  = ratings.reduce((sum, R) => sum + expectedScore(Y, R), 0);
-    const threshold = expTotal + 1.0;
-    const minSc     = (Math.floor(threshold / 0.5) + 1) * 0.5;
-    const possible  = minSc <= m;
-    const earned    = hasScore && S !== null && possible && S >= minSc;
-    return { name, Y, expTotal, threshold, minSc, possible, earned };
+    const { CT, threshold, earned, marginAbove } = normResult(Y, ratings, S, requiredMargin);
+    // Display-only: smallest 0.5-multiple that STRICTLY exceeds the threshold.
+    // (Used purely for rendering — the earned/not-earned test above uses the
+    //  full-precision threshold, never this rounded value.)
+    const minSc    = (Math.floor(threshold / 0.5) + 1) * 0.5;
+    const possible = m > threshold;                   // a perfect score (m) must strictly clear
+    return { name, Y, CT, threshold, minSc, possible, earned, marginAbove };
   });
 
   nrows.forEach((r, i) => {
     if (r.possible) bestAchievable = i;
     if (r.earned)   bestEarned     = i;
   });
-  return { rows: nrows, bestAchievable, bestEarned, S, hasScore };
+  return { rows: nrows, bestAchievable, bestEarned, S, hasScore, requiredMargin };
 }
 
 function renderNorms(ratings, m, score) {
@@ -1047,10 +1141,11 @@ function renderNorms(ratings, m, score) {
     return;
   }
 
-  const { rows: nrows, bestAchievable, bestEarned, S, hasScore } = computeNorms(ratings, m, score);
+  const requiredMargin = getRequiredMargin(m);
+  const { rows: nrows, bestAchievable, bestEarned, S, hasScore } = computeNorms(ratings, m, score, requiredMargin);
 
   normBody.innerHTML = "";
-  nrows.forEach(({ name, Y, expTotal, threshold, minSc, possible, earned }, i) => {
+  nrows.forEach(({ name, Y, CT, threshold, minSc, possible, earned }, i) => {
     const isBestA = i === bestAchievable;
     const tr = document.createElement("tr");
     if (isBestA) tr.className = "row-best";
@@ -1075,7 +1170,7 @@ function renderNorms(ratings, m, score) {
 
     tr.innerHTML = `
       <td>${levelHtml}</td>
-      <td class="r">${f2(expTotal)}</td>
+      <td class="r">${f2(CT)}</td>
       <td class="r">${f2(threshold)}</td>
       <td class="r">${formatScore(minSc)}&thinsp;/&thinsp;${m}</td>
       <td class="c">${statusHtml}</td>`;
@@ -1108,6 +1203,28 @@ function renderNorms(ratings, m, score) {
     } else {
       callHtml += `<div class="callout yellow"><span class="callout-icon">✗</span>
         <div class="callout-body"><strong>No norm at ${formatScore(S)}</strong>Score not sufficient against this field for any norm level.</div></div>`;
+    }
+
+    // "How close was this?" diagnostic for the highest achievable norm not earned.
+    let targetIdx = -1;
+    for (let i = nrows.length - 1; i >= 0; i--) {
+      if (nrows[i].possible && !nrows[i].earned) { targetIdx = i; break; }
+    }
+    if (targetIdx >= 0) {
+      const t = nrows[targetIdx];
+      const shortBy = t.threshold - S;                 // points of score still needed
+      const uni     = uniformGapNeeded(t.Y, ratings, S, requiredMargin);
+      const single  = cheapestSingleBump(t.Y, ratings, S, requiredMargin);
+
+      let body = `<strong>How close was ${t.name} (${t.Y.toLocaleString()})?</strong>`;
+      body += `You scored ${f2(t.marginAbove)} above expectation (CT = ${f2(t.CT)}); a norm needs more than +${f2(requiredMargin)}, so you came up ${f2(shortBy)} short. `;
+
+      if (!isFinite(uni) || single === null) {
+        body += `Counterfactually, no stronger field could have produced this norm at a score of ${formatScore(S)} — the score itself is at or below the +${f2(requiredMargin)} requirement.`;
+      } else {
+        body += `Counterfactually — opponent ratings are fixed by the games actually played — the field would have needed to be about <strong>+${Math.round(uni)} per opponent</strong> higher, or opponent #${single.index + 1} (${single.oppRating}) alone about <strong>+${Math.round(single.points)}</strong> higher, to flip this to earned.`;
+      }
+      callHtml += `<div class="callout blue"><span class="callout-icon">📐</span><div class="callout-body">${body}</div></div>`;
     }
   }
   normCallout.innerHTML = callHtml;
@@ -1238,6 +1355,10 @@ function recalc() {
   refreshScoreSelect(m);
   if (score !== "" && parseFloat(score) <= m) inpScore.value = score;
 
+  // The +2.0 bye/forfeit option only applies to a 3-game event.
+  const byeField = document.getElementById("bye-field");
+  if (byeField) byeField.style.display = (m === 3) ? "flex" : "none";
+
   renderNorms(ratings, m, inpScore.value);
   renderRating(ratings, m, inpScore.value);
 }
@@ -1251,6 +1372,7 @@ inpScore.addEventListener("change", recalc);
 inpR.addEventListener("input",   recalc);
 inpN.addEventListener("input",   recalc);
 inpPeak.addEventListener("input", recalc);
+document.getElementById("inp-bye").addEventListener("change", recalc);
 
 for (let i = 0; i < 5; i++) makeRow();
 renderGrid();
@@ -1579,6 +1701,89 @@ fideInpYouth.addEventListener("change", fideRecalc);
 for (let i = 0; i < 5; i++) makeFideRow();
 renderFideGrid();
 fideRecalc();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// NORM-LOGIC SELF-TESTS (real tournament data)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function runNormSelfTests() {
+  const results = [];
+  const approx = (a, b, tol) => Math.abs(a - b) <= tol;
+  const check  = (name, pass, detail) => results.push({ name, pass: !!pass, detail: detail || "" });
+
+  // ── Cᵢ piecewise boundaries ──
+  check("Cᵢ: Δ ≤ −400 → 0",      normCi(2000, 2400) === 0,                 `got ${normCi(2000,2400)}`);
+  check("Cᵢ: Δ = 0 → 0.5",       normCi(2000, 2000) === 0.5,               `got ${normCi(2000,2000)}`);
+  check("Cᵢ: Δ = −100 → 0.375",  approx(normCi(2000,2100), 0.375, 1e-9),   `got ${normCi(2000,2100)}`);
+  check("Cᵢ: Δ = 100 → 0.75",    approx(normCi(2000,1900), 0.75, 1e-9),    `got ${normCi(2000,1900)}`);
+  check("Cᵢ: Δ = 200 → 1.0",     approx(normCi(2000,1800), 1.0, 1e-9),     `got ${normCi(2000,1800)}`);
+  check("Cᵢ: Δ > 200 → 1",       normCi(2000, 1500) === 1,                 `got ${normCi(2000,1500)}`);
+
+  // ── MISS case: Y=2000, score 3.0 — must be NOT earned ──
+  const missField = [1994, 2041, 2014, 2065, 2247];
+  const mr = normResult(2000, missField, 3.0, 1.0);
+  check("Miss: CT ≈ 2.056",            approx(mr.CT, 2.056, 0.005),         `CT=${mr.CT.toFixed(4)}`);
+  check("Miss: threshold ≈ 3.056",     approx(mr.threshold, 3.056, 0.005),  `thr=${mr.threshold.toFixed(4)}`);
+  check("Miss: NOT earned",            mr.earned === false,                 `earned=${mr.earned}`);
+  check("Miss: margin above ≈ 0.944",  approx(mr.marginAbove, 0.944, 0.005),`margin=${mr.marginAbove.toFixed(4)}`);
+  const mUni = uniformGapNeeded(2000, missField, 3.0, 1.0);
+  check("Miss: uniform gap ≈ +8/opp",  Math.round(mUni) === 8,              `≈ +${Math.round(mUni)} (raw ${mUni.toFixed(2)})`);
+  const mSingle = cheapestSingleBump(2000, missField, 3.0, 1.0);
+  check("Miss: cheapest single ≈ +39", mSingle && Math.round(mSingle.points) >= 38 && Math.round(mSingle.points) <= 40,
+                                       mSingle ? `≈ +${Math.round(mSingle.points)} (raw ${mSingle.points.toFixed(2)})` : "null");
+  check("Miss: cheapest opp = 1994",   mSingle && mSingle.oppRating === 1994 && mSingle.index === 0,
+                                       mSingle ? `opp ${mSingle.oppRating} (idx ${mSingle.index})` : "null");
+
+  // ── PASS case: same field raised ~15 each — must be EARNED ──
+  const passField = [2009, 2056, 2029, 2080, 2262];
+  const pr = normResult(2000, passField, 3.0, 1.0);
+  check("Pass: CT < 2.0",        pr.CT < 2.0,            `CT=${pr.CT.toFixed(4)}`);
+  check("Pass: threshold < 3.0", pr.threshold < 3.0,     `thr=${pr.threshold.toFixed(4)}`);
+  check("Pass: EARNED",          pr.earned === true,     `earned=${pr.earned}`);
+
+  // ── BOUNDARY case: score exactly equals CT + 1.0 → strict > means NOT earned ──
+  const tieField = [2000, 2000, 2000, 2000]; // CT = 2.0 exactly, threshold = 3.0 exactly
+  const tr = normResult(2000, tieField, 3.0, 1.0);
+  check("Boundary: threshold === 3.0",        tr.threshold === 3.0,        `thr=${tr.threshold}`);
+  check("Boundary: exact tie NOT earned (>)", tr.earned === false,         `earned=${tr.earned}`);
+  const tr2 = normResult(2000, tieField, 3.5, 1.0);
+  check("Boundary: +0.5 above IS earned",     tr2.earned === true,         `earned=${tr2.earned}`);
+
+  // ── Bye/forfeit special case: 3 games, +2.0 margin required ──
+  const byeRes = normResult(2000, [2000,2000,2000], 3.0, 2.0); // CT=1.5, threshold=3.5
+  check("Bye: +2.0 margin → 3.0 NOT earned", byeRes.earned === false && approx(byeRes.threshold, 3.5, 1e-9),
+                                             `thr=${byeRes.threshold}`);
+
+  return results;
+}
+
+(function renderSelfTests() {
+  const body = document.getElementById("selftest-body");
+  let results;
+  try {
+    results = runNormSelfTests();
+  } catch (e) {
+    if (body) body.innerHTML = `<p style="color:var(--rose)">Self-tests threw: ${e.message}</p>`;
+    console.error("[norm self-tests] threw", e);
+    return;
+  }
+  const passed = results.filter(r => r.pass).length;
+  const total  = results.length;
+  const allPass = passed === total;
+
+  console.log(`%c[norm self-tests] ${passed}/${total} passed`, `color:${allPass ? "green" : "red"};font-weight:bold`);
+  results.filter(r => !r.pass).forEach(r => console.error("FAIL:", r.name, "—", r.detail));
+
+  if (!body) return;
+  let html = `<p style="font-weight:700;color:${allPass ? "var(--emerald)" : "var(--rose)"}">${passed}/${total} passed${allPass ? " ✓" : " — see failures below"}</p>`;
+  html += '<div style="font-family:\'Cascadia Code\',Consolas,monospace;font-size:.76rem;line-height:1.75">';
+  results.forEach(r => {
+    html += `<div style="color:${r.pass ? "var(--emerald)" : "var(--rose)"}">${r.pass ? "✓" : "✗"} ${r.name}` +
+            `${r.detail ? ` <span style="color:var(--ink-faint)">— ${r.detail}</span>` : ""}</div>`;
+  });
+  html += '</div>';
+  body.innerHTML = html;
+})();
 </script>
 </body>
 </html>
