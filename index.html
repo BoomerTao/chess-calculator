@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Norm — US Chess Rating &amp; Title Norms</title>
+<title>Rating &amp; Norm Calculator — US Chess &amp; FIDE</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -83,6 +83,8 @@ body {
 }
 .mast-brand { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
 .mast-logo { font-family: var(--serif); font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.mast-logo .lg-rating { color: var(--green); }
+.mast-logo .lg-norm   { color: #C2871A; }
 .mast-tag {
   font-size: 12px; font-weight: 600; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--muted);
@@ -332,8 +334,8 @@ details[open] summary::before { transform: rotate(90deg); }
   <!-- ══════════════════════════════════════ MASTHEAD -->
   <header class="mast">
     <div class="mast-brand">
-      <span class="mast-logo">Norm</span>
-      <span class="mast-tag">US&nbsp;Chess · Rating &amp; Title Norms</span>
+      <span class="mast-logo"><span class="lg-rating">Rating</span> &amp; <span class="lg-norm">Norm</span> Calculator</span>
+      <span class="mast-tag">US&nbsp;Chess · FIDE</span>
     </div>
     <div class="mast-right">
       <span class="mast-count num" id="mast-count">5&nbsp;games</span>
@@ -1132,9 +1134,16 @@ function runNormSelfTests() {
   const relEl = document.getElementById("updated-rel"), absEl = document.getElementById("updated-abs");
   if (!relEl || !absEl) return;
   function relTime(d) {
-    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
-    if (days <= 0) return "today"; if (days === 1) return "yesterday";
-    if (days < 7) return `${days} days ago`; if (days < 14) return "last week";
+    const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (sec < 60) return "just now";
+    const min = Math.floor(sec / 60);
+    if (min < 60) return min === 1 ? "1 minute ago" : `${min} minutes ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return hr === 1 ? "1 hour ago" : `${hr} hours ago`;
+    const days = Math.floor(hr / 24);
+    if (days === 1) return "yesterday";
+    if (days < 7) return `${days} days ago`;
+    if (days < 14) return "last week";
     if (days < 60) return `${Math.floor(days / 7)} weeks ago`;
     if (days < 730) return `${Math.floor(days / 30)} months ago`;
     return `${Math.floor(days / 365)} years ago`;
@@ -1142,7 +1151,11 @@ function runNormSelfTests() {
   function render(d) {
     if (isNaN(d.getTime())) return;
     relEl.textContent = relTime(d);
-    absEl.textContent = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    // Absolute date + time in the VIEWER's local timezone (undefined locale).
+    absEl.textContent = d.toLocaleString(undefined, {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit", timeZoneName: "short"
+    });
     absEl.title = d.toString();
   }
   render(new Date(FALLBACK_ISO));
