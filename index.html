@@ -3,903 +3,497 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>US Chess Calculator — Norms &amp; Rating</title>
+<title>Norm — US Chess Rating &amp; Title Norms</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-/* ── Reset ────────────────────────────────────────────────────────── */
+/* ── Reset & tokens ───────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Tokens ───────────────────────────────────────────────────────── */
 :root {
-  --ink:        #0f1117;
-  --ink-soft:   #5a5f72;
-  --ink-faint:  #9297a8;
-  --bg:         #f0eeea;
-  --surface:    #ffffff;
-  --surface-2:  #f8f7f4;
-  --border:     #e0dbd2;
-  --border-med: #c8c2b8;
+  --paper:    #F4F2EB;
+  --paper-2:  #F1EFE7;
+  --card:     #FCFBF7;
+  --card-2:   #FAF8F2;
+  --ink:      #1A1813;
+  --ink-2:    #3A362E;
+  --ink-3:    #6B665C;
+  --label:    #8A857B;
+  --muted:    #9B968B;
+  --faint:    #A8A296;
+  --faint-2:  #B0AB9F;
+  --faint-3:  #C4BFB3;
+  --hair:     #E0DCD1;
+  --hair-2:   #E4E0D5;
+  --hair-3:   #E9E5DA;
+  --hair-4:   #EDEAE0;
 
-  --navy:       #0d2744;
-  --navy-mid:   #163a61;
-  --blue:       #1c5fa8;
-  --blue-lt:    #deeaf8;
-  --blue-bd:    #7aaee0;
+  --forest:   #16201D;
+  --gold:     #E7B24B;
+  --gold-ink: #9A6614;
+  --gold-bg:  #F9F0DA;
+  --gold-bd:  #E9D49A;
+  --gold-note:#FAF6EC;
+  --gold-note-bd: #ECE2C8;
 
-  --emerald:    #0f6b40;
-  --emerald-lt: #d0f0e2;
-  --emerald-bd: #3aaa74;
+  --green:    #1C7A54;
+  --green-d:  #0E5C50;
+  --green-bg: #E4F0E7;
+  --green-bd: #BFE0CB;
+  --green-pill: #E2EDE9;
 
-  --amber:      #92610a;
-  --amber-lt:   #fdf3d8;
-  --amber-bd:   #e0b040;
-
-  --rose:       #8b1c28;
-  --rose-lt:    #fde8eb;
-  --rose-bd:    #e08090;
-
-  --radius-sm:  5px;
-  --radius:     10px;
-  --radius-lg:  14px;
-
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
-  --shadow:     0 4px 12px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
-  --shadow-lg:  0 8px 24px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.08);
+  --serif: 'Newsreader', Georgia, serif;
+  --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  --mono:  'Space Grotesk', ui-monospace, 'Cascadia Code', monospace;
 }
 
-/* ── Base ─────────────────────────────────────────────────────────── */
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  background: var(--bg);
+  background: var(--paper-2);
   color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
-  font-size: 0.9375rem;
-  line-height: 1.5;
+  font-size: 15px;
+}
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  background: var(--paper);
+  min-height: 100vh;
 }
 
-/* ── Site header ──────────────────────────────────────────────────── */
-.site-header {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-  color: #fff;
-  padding: 2rem 1.5rem 1.75rem;
-  position: relative;
-  overflow: hidden;
-}
-.site-header::before {
-  content: "♟";
-  position: absolute;
-  right: -0.5rem;
-  top: -1rem;
-  font-size: 9rem;
-  opacity: .06;
-  line-height: 1;
-  pointer-events: none;
-  user-select: none;
-}
-.site-header-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.site-title {
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -.02em;
-  color: #fff;
+/* ── Masthead ─────────────────────────────────────────────────────── */
+.mast {
+  padding: 24px 40px;
   display: flex;
   align-items: center;
-  gap: .55rem;
-  margin-bottom: .3rem;
-}
-.site-title-icon {
-  font-size: 1.5rem;
-  opacity: .85;
-}
-.site-subtitle {
-  color: rgba(255,255,255,.6);
-  font-size: .875rem;
-}
-.site-pills {
-  display: flex;
-  gap: .5rem;
-  margin-top: .85rem;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hair);
   flex-wrap: wrap;
+  gap: 12px;
 }
-.site-pill {
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.18);
-  color: rgba(255,255,255,.85);
-  font-size: .72rem;
-  font-weight: 600;
-  padding: .2rem .6rem;
-  border-radius: 999px;
-  letter-spacing: .03em;
-  text-transform: uppercase;
+.mast-brand { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
+.mast-logo { font-family: var(--serif); font-size: 26px; font-weight: 600; letter-spacing: -0.01em; }
+.mast-tag {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
 }
-
-/* ── Page body ────────────────────────────────────────────────────── */
-.page-body {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+.mast-right { display: flex; align-items: center; gap: 16px; }
+.mast-count { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; color: var(--muted); }
+.mast-live {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--green-d); background: var(--green-pill); padding: 6px 12px; border-radius: 999px;
 }
 
-/* ── Cards ────────────────────────────────────────────────────────── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.35rem 1.5rem;
-  margin-bottom: 1.25rem;
-  box-shadow: var(--shadow-sm);
-}
-.card-title {
-  font-size: .8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--ink-faint);
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-}
-.card-title-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: var(--navy);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .7rem;
-  flex-shrink: 0;
-}
+/* ── Layout ───────────────────────────────────────────────────────── */
+.layout { display: grid; grid-template-columns: 372px 1fr; align-items: stretch; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 
-.badge {
-  background: var(--blue);
-  color: #fff;
-  font-size: .7rem;
-  padding: .15rem .5rem;
-  border-radius: 999px;
-  font-weight: 700;
-  letter-spacing: .02em;
+/* ── Sidebar ──────────────────────────────────────────────────────── */
+.side {
+  padding: 30px 30px 38px;
+  border-right: 1px solid var(--hair);
+  background: var(--paper-2);
 }
+@media (max-width: 900px) { .side { border-right: none; border-bottom: 1px solid var(--hair); } }
 
-/* ── Two-column layout ────────────────────────────────────────────── */
-.two-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-@media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+.side-sec { margin-bottom: 26px; }
+.side-sec:last-child { margin-bottom: 0; }
 
-/* ── Panel headers ────────────────────────────────────────────────── */
-.panel-header {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  margin-bottom: 1rem;
-  padding-bottom: .75rem;
-  border-bottom: 2px solid var(--border);
+.sec-head {
+  display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px;
 }
-.panel-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
+.eyebrow {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--label);
 }
-.panel-icon.blue    { background: var(--blue-lt);    color: var(--blue); }
-.panel-icon.emerald { background: var(--emerald-lt); color: var(--emerald); }
-.panel-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink);
-}
-.panel-sub {
-  font-size: .75rem;
-  color: var(--ink-faint);
-}
+.eyebrow-note { font-size: 11px; color: var(--faint-2); }
 
-/* ── Opponent input grid ──────────────────────────────────────────── */
-.input-grid {
-  display: grid;
-  grid-template-columns: 28px 1fr 32px;
-  gap: .4rem;
-  align-items: center;
-  margin-bottom: .55rem;
+/* opponent list */
+.opp-card { background: var(--card); border: 1px solid var(--hair-2); border-radius: 12px; overflow: hidden; }
+.opp-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px; border-bottom: 1px solid var(--hair-4);
 }
-.col-label {
-  font-size: .68rem;
-  color: var(--ink-faint);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
+.opp-row:focus-within { background: #fff; }
+.opp-n { width: 16px; font-size: 12px; color: var(--faint-2); font-weight: 500; }
+.opp-input {
+  flex: 1; min-width: 0; border: none; background: transparent;
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 17px; font-weight: 500; color: var(--ink); outline: none;
 }
-.row-num {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .72rem;
-  font-weight: 700;
-  color: var(--ink-faint);
-  flex-shrink: 0;
+.opp-input.invalid { color: #b3261e; }
+.opp-exp { font-size: 11px; color: var(--faint-3); font-weight: 600; min-width: 30px; text-align: right; }
+.opp-x {
+  border: none; background: transparent; color: var(--faint-2); cursor: pointer;
+  font-size: 12px; line-height: 1; padding: 4px; border-radius: 5px;
+  opacity: 0; transition: opacity .15s, color .15s, background .15s;
 }
-
-/* ── Inputs & selects ─────────────────────────────────────────────── */
-input[type="number"], select {
-  width: 100%;
-  padding: .45rem .65rem;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: .9rem;
-  font-family: inherit;
-  color: var(--ink);
-  background: var(--surface-2);
-  transition: border-color .15s, box-shadow .15s, background .15s;
-  appearance: none;
-  -webkit-appearance: none;
-}
-input[type="number"]:focus, select:focus {
-  outline: none;
-  border-color: var(--blue);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(28,95,168,.12);
-}
-input.invalid {
-  border-color: var(--rose-bd);
-  background: var(--rose-lt);
-}
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239297a8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right .65rem center;
-  padding-right: 2rem;
-  cursor: pointer;
-}
-
-/* ── Buttons ──────────────────────────────────────────────────────── */
-.btn-remove {
-  width: 28px;
-  height: 28px;
-  background: none;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--ink-faint);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .8rem;
-  transition: all .15s;
-  flex-shrink: 0;
-}
-.btn-remove:hover {
-  background: var(--rose-lt);
-  border-color: var(--rose-bd);
-  color: var(--rose);
-}
-
+.opp-row:hover .opp-x { opacity: 1; }
+.opp-x:hover { color: #b3261e; background: #fbeceb; }
 .btn-add {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .5rem 1rem;
-  background: var(--navy);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: .85rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background .15s, transform .1s;
-  box-shadow: var(--shadow-sm);
+  width: 100%; text-align: left; padding: 12px 16px; border: none; background: transparent;
+  cursor: pointer; font-family: var(--sans); font-size: 13px; font-weight: 600;
+  color: var(--green-d); display: flex; align-items: center; gap: 8px;
 }
-.btn-add:hover { background: var(--navy-mid); }
-.btn-add:active { transform: scale(.97); }
+.btn-add:hover { background: var(--card-2); }
+.btn-add .plus { font-size: 15px; line-height: 1; }
 
-/* ── Meta row (score + other fields) ─────────────────────────────── */
-.meta-divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 1rem 0 .9rem;
+/* score pills */
+.pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.pill {
+  flex: 1 1 calc(16.666% - 7px); min-width: 46px; text-align: center; padding: 14px 0;
+  border-radius: 10px; font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 17px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--hair); background: var(--card); color: var(--ink-3);
+  transition: all .12s;
 }
-.meta-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-  gap: .7rem;
-}
-.meta-field label {
-  display: block;
-  font-size: .72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: var(--ink-faint);
-  margin-bottom: .3rem;
-}
-.meta-field input, .meta-field select { width: 100%; }
+.pill:hover { border-color: var(--faint-2); }
+.pill.active { background: var(--forest); color: var(--paper); border-color: var(--forest); }
 
-/* ── Tables ───────────────────────────────────────────────────────── */
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
-thead tr { background: var(--surface-2); }
-th {
-  text-align: left;
-  padding: .55rem .7rem;
-  font-size: .68rem;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--ink-faint);
-  font-weight: 700;
-  border-bottom: 2px solid var(--border);
-  white-space: nowrap;
+/* field inputs */
+.field-row { display: flex; gap: 11px; }
+.field { flex: 1; }
+.field label {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--label); margin-bottom: 7px;
 }
-th.r, td.r { text-align: right; }
-th.c, td.c { text-align: center; }
-td {
-  padding: .6rem .7rem;
-  border-bottom: 1px solid var(--border);
-  vertical-align: middle;
+.field input, .field select {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--hair); border-radius: 9px;
+  background: var(--card); font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: 17px; font-weight: 600; color: var(--ink); outline: none;
 }
-tr:last-child td { border-bottom: none; }
-tbody tr:hover td { background: var(--surface-2); }
+.field input:focus, .field select:focus { border-color: var(--green-d); }
+.field select { appearance: none; -webkit-appearance: none; cursor: pointer; font-size: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath fill='%239B968B' d='M.5.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 30px; }
 
-tr.row-best td {
-  background: var(--emerald-lt) !important;
+.check {
+  display: flex; align-items: center; gap: 9px; margin-top: 14px;
+  font-size: 13px; color: var(--ink-3); cursor: pointer;
 }
-tr.row-best td:first-child {
-  border-left: 3px solid var(--emerald-bd);
-}
-tr.row-best:hover td { filter: brightness(.97); }
+.check input { width: 16px; height: 16px; accent-color: var(--green-d); flex-shrink: 0; cursor: pointer; }
 
-.lv-name { font-weight: 700; color: var(--ink); font-size: .875rem; }
-.lv-sub  { color: var(--ink-faint); font-size: .76rem; margin-top: .1rem; }
+/* sidebar mini-stats */
+.side-stats { margin-top: 18px; padding: 14px 16px; background: var(--card-2); border: 1px solid var(--hair-3); border-radius: 10px; }
+.side-stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--label); line-height: 1.9; }
+.side-stat b { color: var(--ink-2); font-weight: 600; }
 
-.pill-earned {
-  display: inline-flex;
-  align-items: center;
-  gap: .25rem;
-  background: var(--emerald-lt);
-  color: var(--emerald);
-  border: 1px solid var(--emerald-bd);
-  border-radius: 999px;
-  padding: .15rem .55rem;
-  font-size: .78rem;
-  font-weight: 700;
-}
-.pill-possible {
-  color: var(--blue);
-  font-weight: 700;
-  font-size: .85rem;
-}
-.pill-impossible {
-  color: var(--rose);
-  font-size: .78rem;
-  line-height: 1.4;
-}
-.pill-no {
-  color: var(--ink-faint);
-  font-size: .82rem;
-}
+/* ── Main ─────────────────────────────────────────────────────────── */
+.main { padding: 30px 40px 46px; min-width: 0; }
+@media (max-width: 560px) { .main, .side { padding-left: 20px; padding-right: 20px; } .mast { padding-left: 20px; padding-right: 20px; } }
 
-.tag-best {
-  display: inline-block;
-  font-size: .63rem;
-  background: var(--emerald);
-  color: #fff;
-  border-radius: 4px;
-  padding: .1rem .4rem;
-  margin-left: .4rem;
-  vertical-align: middle;
-  font-weight: 800;
-  letter-spacing: .04em;
+/* hero */
+.hero {
+  background: var(--forest); border-radius: 20px; padding: 30px 34px; color: var(--paper);
+  position: relative; overflow: hidden; box-shadow: 0 22px 50px -22px rgba(22,32,29,0.5);
+  display: flex; align-items: stretch; gap: 36px;
 }
+.hero-knight {
+  position: absolute; right: 30px; top: -64px; font-family: var(--serif);
+  font-size: 260px; line-height: 1; color: rgba(244,242,235,0.05); pointer-events: none; user-select: none;
+}
+.hero-main { flex: 1; position: relative; min-width: 0; }
+.hero-kicker-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+.hero-kicker { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(244,242,235,0.5); }
+.hero-pill { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; }
+.hero-pill.earned { background: #2E7D55; color: #EAF7EF; }
+.hero-pill.miss   { background: var(--gold); color: var(--ink); }
+.hero-pill.out    { background: rgba(244,242,235,0.14); color: rgba(244,242,235,0.7); }
+.hero-title { font-family: var(--serif); font-size: 46px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.0; }
+.hero-sub { font-size: 12px; color: rgba(244,242,235,0.45); margin-top: 8px; letter-spacing: 0.04em; }
+.hero-bar-wrap { margin-top: 28px; }
+.hero-bar { height: 6px; border-radius: 999px; background: rgba(244,242,235,0.12); overflow: hidden; }
+.hero-bar-fill { height: 100%; border-radius: 999px; }
+.hero-bar-legend { display: flex; justify-content: space-between; font-size: 11px; color: rgba(244,242,235,0.4); margin-top: 8px; }
+.hero-div { width: 1px; background: rgba(244,242,235,0.12); }
+.hero-side { width: 196px; position: relative; display: flex; flex-direction: column; justify-content: center; }
+.hero-side-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+.hero-big { font-size: 70px; font-weight: 600; line-height: 0.9; letter-spacing: -0.02em; }
+.hero-big.pos { color: #7FD6A6; }
+.hero-detail { font-size: 13px; color: rgba(244,242,235,0.55); line-height: 1.9; margin-top: 14px; }
+.hero-detail .ln { display: flex; justify-content: space-between; }
+.hero-detail b { color: var(--paper); font-weight: 600; }
+.hero-empty { padding: 22px 0; font-size: 15px; color: rgba(244,242,235,0.55); font-family: var(--sans); }
+@media (max-width: 720px) { .hero { flex-direction: column; gap: 24px; } .hero-div { display: none; } .hero-side { width: 100%; } .hero-title { font-size: 38px; } .hero-big { font-size: 58px; } }
 
-/* ── Callouts ─────────────────────────────────────────────────────── */
-.callout {
-  display: flex;
-  align-items: flex-start;
-  gap: .65rem;
-  border-radius: var(--radius-sm);
-  padding: .75rem .9rem;
-  font-size: .875rem;
-  margin-top: .9rem;
-  line-height: 1.5;
-}
-.callout.green  { background: var(--emerald-lt); border: 1px solid var(--emerald-bd); }
-.callout.blue   { background: var(--blue-lt);    border: 1px solid var(--blue-bd); }
-.callout.yellow { background: var(--amber-lt);   border: 1px solid var(--amber-bd); }
-.callout.red    { background: var(--rose-lt);    border: 1px solid var(--rose-bd); }
-.callout-icon   { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; line-height: 1; }
-.callout-body   { line-height: 1.55; }
-.callout-body strong { display: block; margin-bottom: .15rem; font-size: .9rem; }
+/* bottom grid */
+.bottom { display: grid; grid-template-columns: 1fr 350px; gap: 28px; margin-top: 28px; align-items: start; }
+@media (max-width: 880px) { .bottom { grid-template-columns: 1fr; } }
 
-/* ── Stat grid (rating panel) ─────────────────────────────────────── */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: .65rem;
-  margin-bottom: .85rem;
+/* ladder */
+.ladder { display: flex; flex-direction: column; gap: 6px; }
+.lad-row {
+  display: flex; align-items: center; gap: 14px; padding: 13px 18px;
+  border-radius: 11px; border: 1px solid var(--hair-3); background: var(--card-2);
 }
-.stat-box {
-  background: var(--surface-2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: .7rem .8rem;
-  transition: border-color .15s;
-}
-.stat-box:hover { border-color: var(--border-med); }
-.stat-box.highlight {
-  background: var(--navy);
-  border-color: var(--navy);
-  color: #fff;
-}
-.stat-label {
-  font-size: .67rem;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: var(--ink-faint);
-  font-weight: 700;
-  margin-bottom: .25rem;
-}
-.stat-box.highlight .stat-label { color: rgba(255,255,255,.55); }
-.stat-val {
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: var(--ink);
-  line-height: 1.2;
-}
-.stat-box.highlight .stat-val { color: #fff; }
-.stat-sub {
-  font-size: .7rem;
-  color: var(--ink-faint);
-  margin-top: .2rem;
-}
-.stat-box.highlight .stat-sub { color: rgba(255,255,255,.5); }
+.lad-rail { width: 3px; align-self: stretch; border-radius: 999px; flex-shrink: 0; }
+.lad-name { flex: 1; min-width: 0; font-size: 15px; letter-spacing: -0.005em; }
+.lad-level { font-size: 12px; color: var(--faint); width: 56px; text-align: right; }
+.lad-margin { font-size: 16px; font-weight: 600; width: 64px; text-align: right; }
+.lad-status { width: 92px; text-align: right; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+@media (max-width: 460px) { .lad-level { display: none; } .lad-status { width: 70px; } }
 
-.delta-pos { color: var(--emerald); }
-.delta-neg { color: var(--rose); }
-.delta-neu { color: var(--ink-faint); }
+/* projection / output cards */
+.out-card { background: var(--card); border: 1px solid var(--hair-2); border-radius: 14px; padding: 22px; }
+.out-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 5px; }
+.out-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.out-big { font-size: 48px; font-weight: 600; line-height: 0.9; letter-spacing: -0.02em; color: var(--ink); }
+.out-delta { text-align: right; padding-bottom: 5px; }
+.out-delta .d { font-size: 20px; font-weight: 700; }
+.out-delta .from { font-size: 11px; color: var(--faint); }
+.d.pos { color: var(--green); } .d.neg { color: #b3261e; } .d.neu { color: var(--faint); }
+.out-stats { display: flex; gap: 6px; margin-top: 18px; }
+.out-stat { flex: 1; background: var(--card-2); border: 1px solid var(--hair-3); border-radius: 10px; padding: 11px 12px; }
+.out-stat .l { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
+.out-stat .v { font-size: 16px; font-weight: 600; color: var(--ink-2); margin-top: 3px; }
+.out-empty { font-size: 14px; color: var(--faint); padding: 8px 0; }
+.out-note { margin-top: 14px; font-size: 12px; line-height: 1.55; padding: 11px 13px; border-radius: 9px; }
+.out-note.gold { background: var(--gold-note); border: 1px solid var(--gold-note-bd); color: var(--gold-ink); }
+.out-note.green { background: var(--green-bg); border: 1px solid var(--green-bd); color: var(--green); }
+.out-note b { font-weight: 700; }
 
-/* ── Empty state ──────────────────────────────────────────────────── */
-.empty {
-  text-align: center;
-  color: var(--ink-faint);
-  padding: 2rem 1rem;
-  font-size: .875rem;
-  font-style: italic;
-}
+/* diagnostic */
+.diag { margin-top: 14px; padding: 14px 16px; background: var(--card-2); border: 1px solid var(--hair-3); border-left: 3px solid var(--gold); border-radius: 9px; font-size: 13px; line-height: 1.6; color: var(--ink-3); }
+.diag b { color: var(--ink-2); font-weight: 700; }
 
-/* ── Collapsible ──────────────────────────────────────────────────── */
-details {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 1.25rem;
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-summary {
-  cursor: pointer;
-  font-size: .85rem;
-  font-weight: 700;
-  color: var(--ink);
-  user-select: none;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding: .9rem 1.25rem;
-  transition: background .15s;
-}
-summary:hover { background: var(--surface-2); }
-summary::-webkit-details-marker { display: none; }
-summary::before {
-  content: "▶";
-  font-size: .58rem;
-  color: var(--ink-faint);
-  transition: transform .15s;
-  display: inline-block;
-}
-details[open] summary { border-bottom: 1px solid var(--border); }
-details[open] summary::before { transform: rotate(90deg); }
-.details-body {
-  padding: 1rem 1.25rem;
-  font-size: .82rem;
-  color: var(--ink-soft);
-  line-height: 1.75;
-}
-.details-body p { margin-bottom: .6rem; }
-.details-body p:last-child { margin-bottom: 0; }
-.details-body code {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  padding: .1rem .38rem;
-  border-radius: 4px;
-  font-size: .79rem;
-  color: var(--ink);
-  font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-}
-.details-body strong { color: var(--ink); font-weight: 700; }
+/* divider */
+.divider { display: flex; align-items: center; gap: 16px; margin-top: 38px; }
+.divider .ln { height: 1px; flex: 1; background: #DAD5C9; }
+.divider .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
 
-/* ── Footnote ─────────────────────────────────────────────────────── */
-.footnote {
-  font-size: .74rem;
-  color: var(--ink-faint);
-  border-top: 1px solid var(--border);
-  padding-top: .75rem;
-  margin-top: .9rem;
-  line-height: 1.65;
-}
-.footnote p { margin-bottom: .3rem; }
-.footnote p:last-child { margin-bottom: 0; }
-
-/* ── System divider ──────────────────────────────────────────────── */
-.system-section { margin-top: 2rem; }
-.system-label {
-  display: flex;
-  align-items: center;
-  gap: .75rem;
-  margin-bottom: 1.25rem;
-}
-.system-label-line { flex: 1; height: 1px; background: var(--border-med); }
-.system-label-text {
-  font-size: .7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--ink-faint);
-  white-space: nowrap;
-}
 .cross-note {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--amber-bd);
-  border-radius: var(--radius-sm);
-  padding: .6rem .9rem;
-  font-size: .775rem;
-  color: var(--ink-soft);
-  margin-bottom: 1.25rem;
-  line-height: 1.6;
-  box-shadow: var(--shadow-sm);
+  margin-top: 16px; padding: 13px 16px; background: var(--gold-note);
+  border: 1px solid var(--gold-note-bd); border-left: 3px solid var(--gold);
+  border-radius: 9px; font-size: 12px; line-height: 1.55; color: var(--ink-3);
 }
-.fide-auto-fields { display: none; }
-.fide-auto-fields.visible { display: grid; }
-.checkbox-field {
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  padding-top: 1.3rem;
-}
-.checkbox-field input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  accent-color: var(--blue);
-  cursor: pointer;
-}
-.checkbox-field label {
-  text-transform: none !important;
-  letter-spacing: 0 !important;
-  font-size: .875rem !important;
-  color: var(--ink) !important;
-  cursor: pointer;
-  font-weight: 500 !important;
-}
-.cap-note {
-  display: inline-block;
-  font-size: .68rem;
-  background: var(--amber-lt);
-  color: var(--amber);
-  border: 1px solid var(--amber-bd);
-  border-radius: 3px;
-  padding: .1rem .35rem;
-  margin-top: .2rem;
-}
+.cross-note b { color: var(--ink-2); font-weight: 700; }
 
-/* ── Footer ──────────────────────────────────────────────────────── */
-.site-footer {
-  margin-top: 1.75rem;
-  padding-top: 1.1rem;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  flex-wrap: wrap;
-  font-size: .78rem;
-  color: var(--ink-faint);
-}
-.site-footer strong { color: var(--ink-soft); font-weight: 700; }
-.footer-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--emerald-bd);
-  flex-shrink: 0;
-  box-shadow: 0 0 0 3px var(--emerald-lt);
-}
-.footer-sep { color: var(--border-med); }
+/* fide grid */
+.fide-grid { display: grid; grid-template-columns: 1fr 372px; gap: 28px; margin-top: 20px; align-items: start; }
+@media (max-width: 880px) { .fide-grid { grid-template-columns: 1fr; } }
+.fide-auto { display: none; margin-top: 14px; }
+.fide-auto.show { display: block; }
 
-/* ── Responsive tweaks ────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .site-header { padding: 1.5rem 1rem 1.35rem; }
-  .site-title { font-size: 1.35rem; }
-  .page-body { padding: 1rem .85rem 2rem; }
-  .card { padding: 1rem 1.1rem; }
+/* fide per-game table */
+.pg-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12px; }
+.pg-table th { text-align: right; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--faint); font-weight: 700; border-bottom: 1px solid var(--hair-2); }
+.pg-table th:first-child { text-align: left; }
+.pg-table td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--hair-4); font-family: var(--mono); }
+.pg-table td:first-child { text-align: left; }
+.pg-table tr:last-child td { border-bottom: none; }
+.pg-cap { color: var(--gold-ink); font-weight: 600; }
+
+/* collapsibles */
+details { margin-top: 14px; border: 1px solid var(--hair-2); border-radius: 12px; background: var(--card); overflow: hidden; }
+.main > details, .shell > details { margin-top: 28px; }
+summary {
+  cursor: pointer; font-size: 13px; font-weight: 700; color: var(--ink-2); user-select: none;
+  list-style: none; display: flex; align-items: center; gap: 8px; padding: 15px 20px;
 }
+summary:hover { background: var(--card-2); }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▶"; font-size: 8px; color: var(--muted); transition: transform .15s; }
+details[open] summary { border-bottom: 1px solid var(--hair-2); }
+details[open] summary::before { transform: rotate(90deg); }
+.details-body { padding: 16px 20px; font-size: 13px; color: var(--ink-3); line-height: 1.75; }
+.details-body p { margin-bottom: 9px; }
+.details-body p:last-child { margin-bottom: 0; }
+.details-body code { font-family: var(--mono); background: var(--card-2); border: 1px solid var(--hair-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; color: var(--ink); }
+.details-body strong { color: var(--ink-2); }
+.details-body sub { font-size: .8em; }
+
+/* footer */
+.foot {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  padding: 22px 40px 36px; font-size: 12px; color: var(--muted);
+}
+.foot strong { color: var(--ink-3); font-weight: 700; }
+.foot-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 3px var(--green-bg); }
+.foot-sep { color: var(--hair); }
+@media (max-width: 560px) { .foot { padding-left: 20px; padding-right: 20px; } }
 </style>
 </head>
 <body>
+<div class="shell">
 
-<!-- ══════════════════════════════════════════════════ HEADER -->
-<header class="site-header">
-  <div class="site-header-inner">
-    <div class="site-title">
-      <span class="site-title-icon">♟</span>
-      US Chess Calculator
+  <!-- ══════════════════════════════════════ MASTHEAD -->
+  <header class="mast">
+    <div class="mast-brand">
+      <span class="mast-logo">Norm</span>
+      <span class="mast-tag">US&nbsp;Chess · Rating &amp; Title Norms</span>
     </div>
-    <p class="site-subtitle">Norm requirements &amp; rating projection — one field set, both panels update live.</p>
-    <div class="site-pills">
-      <span class="site-pill">Official formula</span>
-      <span class="site-pill">No sign-in needed</span>
+    <div class="mast-right">
+      <span class="mast-count num" id="mast-count">5&nbsp;games</span>
+      <span class="mast-live">Live</span>
     </div>
-  </div>
-</header>
+  </header>
 
-<div class="page-body">
+  <div class="layout">
 
-<!-- ══════════════════════════════════════════════════ SHARED INPUTS -->
-<div class="card">
-  <div class="card-title">
-    <span class="card-title-icon">⚙</span>
-    Event Inputs
-    <span class="badge" id="game-badge">5 games</span>
-  </div>
+    <!-- ══════════════════════════════════════ SIDEBAR -->
+    <aside class="side">
 
-  <div class="input-grid" id="opp-grid">
-    <span class="col-label">#</span>
-    <span class="col-label">Opponent Rating <span style="font-weight:400;text-transform:none;letter-spacing:0">(post-event)</span></span>
-    <span class="col-label"></span>
-  </div>
-
-  <button class="btn-add" id="btn-add">+ Add Opponent</button>
-
-  <div id="bye-field" class="checkbox-field" style="display:none;padding-top:.7rem">
-    <input type="checkbox" id="inp-bye">
-    <label for="inp-bye">4th round was a bye / forfeit (norm then needs to exceed expectation by +2.0)</label>
-  </div>
-
-  <hr class="meta-divider">
-
-  <div class="meta-row">
-    <div class="meta-field">
-      <label for="inp-score">Total Score (S)</label>
-      <select id="inp-score"></select>
-    </div>
-    <div class="meta-field">
-      <label for="inp-r">Your Rating (R)</label>
-      <input type="number" id="inp-r" placeholder="e.g. 1650" min="100" max="3000" step="1">
-    </div>
-    <div class="meta-field">
-      <label for="inp-n">Prior Games (N)</label>
-      <input type="number" id="inp-n" placeholder="e.g. 45" min="0" max="9999" step="1">
-    </div>
-    <div class="meta-field">
-      <label for="inp-peak" title="Used to check your rating floor. Leave blank to skip.">Peak Rating <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-      <input type="number" id="inp-peak" placeholder="e.g. 1800" min="100" max="3000" step="1">
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════ TWO PANELS -->
-<div class="two-col">
-
-  <!-- ── PANEL 1: NORMS ─────────────────────────────────────────── -->
-  <div>
-    <div class="card">
-      <div class="panel-header">
-        <span class="panel-icon emerald">🏅</span>
-        <div>
-          <div class="panel-title">Norm Requirements</div>
-          <div class="panel-sub">Score needed to earn each title norm</div>
+      <section class="side-sec">
+        <div class="sec-head">
+          <span class="eyebrow">Opponents</span>
+          <span class="eyebrow-note">post-event rating</span>
         </div>
-      </div>
-
-      <div class="table-wrap">
-        <table id="norm-table">
-          <thead>
-            <tr>
-              <th>Level</th>
-              <th class="r" title="Σ Cᵢ — sum of official norm coefficients">Expected (C<sub>T</sub>)</th>
-              <th class="r">Threshold</th>
-              <th class="r">Min Score</th>
-              <th class="c">Status</th>
-            </tr>
-          </thead>
-          <tbody id="norm-body">
-            <tr><td colspan="5" class="empty">Enter opponent ratings above.</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div id="norm-callout"></div>
-
-      <div class="footnote">
-        <p>⚠ Uses the official US Chess norm coefficient C<sub>i</sub> (piecewise) on each opponent's <strong>post-event</strong> rating, compared at full precision. A norm needs the score to <em>strictly exceed</em> C<sub>T</sub> + 1.0 (+2.0 with a 4th-round bye/forfeit in a 3-game event).</p>
-        <p>⚠ A <em>title</em> requires <strong>five norms</strong> at that level. CM (2000+) also requires reaching that published rating.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── PANEL 2: RATING ────────────────────────────────────────── -->
-  <div>
-    <div class="card">
-      <div class="panel-header">
-        <span class="panel-icon blue">📈</span>
-        <div>
-          <div class="panel-title">Rating Projection</div>
-          <div class="panel-sub">Estimated post-event rating</div>
+        <div class="opp-card">
+          <div id="opp-list"></div>
+          <button class="btn-add" id="btn-add"><span class="plus">+</span> Add opponent</button>
         </div>
-      </div>
+      </section>
 
-      <div id="rating-content">
-        <div class="empty">Enter your rating and prior games above.</div>
-      </div>
+      <section class="side-sec">
+        <div class="eyebrow" style="margin-bottom:11px">Your score</div>
+        <div class="pills" id="score-pills"></div>
+        <label class="check" id="bye-field" style="display:none">
+          <input type="checkbox" id="inp-bye">
+          4th round was a bye / forfeit — norm needs +2.0
+        </label>
+      </section>
 
-      <div class="footnote">
-        <p>⚠ Approximating formula based on the official US Chess rating system specification. The official algorithm runs two iterations with updated opponent ratings — results may differ slightly.</p>
-        <p>⚠ Bonus assumes all opponents in this event are distinct. Enter peak rating to check floor.</p>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /.two-col -->
-
-<!-- ══════════════════════════════════════════════════ HOW IT WORKS -->
-<details>
-  <summary>How this works</summary>
-  <div class="details-body">
-    <p><strong>Logistic helper</strong> <code>expectedScore(playerRating, oppRating) = 1 / (1 + 10^((opp − player) / 400))</code> is the standard Elo expected score. It is used by the rating projection and performance rating — <em>not</em> by the norm panel.</p>
-
-    <p><strong>Norm panel</strong> uses the official US Chess norm coefficient, not Elo. For title level Y and an opponent's <strong>post-event</strong> rating Rᵢ, let Δ = Y − Rᵢ; then <code>Cᵢ = 0</code> if Δ ≤ −400, <code>0.5 + Δ/800</code> if −400 &lt; Δ ≤ 0, <code>0.5 + Δ/400</code> if 0 &lt; Δ ≤ 200, and <code>1</code> if Δ &gt; 200. Sum to get <code>C<sub>T</sub> = Σ Cᵢ</code>. A norm is earned when the score <em>strictly exceeds</em> C<sub>T</sub> + 1.0 (or + 2.0 if a 3-game event had a 4th-round bye/forfeit). The comparison is made at full floating-point precision; values are rounded only for display.</p>
-
-    <p><strong>Points-needed diagnostic</strong> — when a norm is missed, a counterfactual estimate of how much stronger the (fixed) field would have needed to be: the uniform gap per opponent, and the cheapest single-opponent bump, both found by binary search since C<sub>T</sub> decreases monotonically with opponent ratings.</p>
-
-    <p><strong>Rating panel</strong> — based on the official US Chess rating system specification:</p>
-    <p>• <strong>N*</strong> = 50 / √(0.662 + 0.00000739 × (2569 − R)²) if R ≤ 2355, else 50</p>
-    <p>• <strong>Ne</strong> = min(N, N*) — effective game count (caps at 50; lower for lower-rated players)</p>
-    <p>• <strong>K</strong> = 800 / (Ne + m)</p>
-    <p>• <strong>We</strong> = Σ expectedScore(R, Rᵢ) over all opponents</p>
-    <p>• <strong>Bonus</strong> (m ≥ 3, distinct opponents): m* = max(m, 4); bonus = max(0, K(S−We) − 10√m*)</p>
-    <p>• <strong>R_new</strong> = R + K(S − We) + bonus, rounded to nearest integer</p>
-
-    <p><strong>Floors:</strong> class floors at 1200, 1300, …, 2100. Peak-based floor = largest class floor at or below (peak − 200).</p>
-
-    <p><strong>Performance rating</strong> (shown in both systems) is the single rating Rₚ at which your expected score against this exact field equals your actual score — i.e. <code>Σ expected(Rₚ, oppᵢ) = S</code>, solved numerically. It depends only on the opponents and your score, not on your own current rating. It is undefined (±∞) for a clean sweep or a total loss. This uses the uncapped logistic formula, so FIDE's official table-based tournament performance may differ slightly.</p>
-  </div>
-</details>
-
-<details id="selftest-details">
-  <summary>Developer self-tests (norm logic)</summary>
-  <div class="details-body" id="selftest-body">Running…</div>
-</details>
-
-
-  <!-- ══════════════════════════════════════════════════ CROSS-SYSTEM NOTE -->
-  <p class="cross-note">
-    ℹ <strong>US Chess and FIDE are separate, non-interchangeable rating systems.</strong>
-    A player's US Chess rating is typically ~50–100 points higher than their FIDE rating.
-    Enter US Chess ratings in the tools above and FIDE ratings in the tool below — do not mix them.
-  </p>
-
-  <!-- ══════════════════════════════════════════════════ FIDE SECTION -->
-  <div class="system-section">
-    <div class="system-label">
-      <div class="system-label-line"></div>
-      <span class="system-label-text">FIDE Rating Change</span>
-      <div class="system-label-line"></div>
-    </div>
-
-    <!-- FIDE inputs -->
-    <div class="card">
-      <div class="card-title">
-        <span class="card-title-icon">⚙</span>
-        FIDE Event Inputs
-        <span class="badge" id="fide-game-badge">5 games</span>
-      </div>
-
-      <div class="input-grid" id="fide-opp-grid">
-        <span class="col-label">#</span>
-        <span class="col-label">Opponent FIDE Rating</span>
-        <span class="col-label"></span>
-      </div>
-
-      <button class="btn-add" id="fide-btn-add">+ Add Opponent</button>
-
-      <hr class="meta-divider">
-
-      <div class="meta-row">
-        <div class="meta-field">
-          <label for="fide-inp-score">Total Score (S)</label>
-          <select id="fide-inp-score"></select>
+      <section class="side-sec">
+        <div class="field-row">
+          <div class="field">
+            <label for="inp-r">Your rating</label>
+            <input type="number" id="inp-r" inputmode="numeric" placeholder="1847" min="100" max="3000" step="1">
+          </div>
+          <div class="field">
+            <label for="inp-n">Prior games</label>
+            <input type="number" id="inp-n" inputmode="numeric" placeholder="62" min="0" max="9999" step="1">
+          </div>
         </div>
-        <div class="meta-field">
-          <label for="fide-inp-r">Your FIDE Rating (R)</label>
-          <input type="number" id="fide-inp-r" placeholder="e.g. 1600" min="1000" max="3000" step="1">
+        <div class="field" style="margin-top:14px">
+          <label for="inp-peak">Peak rating <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--faint-2)">(optional · floor)</span></label>
+          <input type="number" id="inp-peak" inputmode="numeric" placeholder="—" min="100" max="3000" step="1">
         </div>
-        <div class="meta-field">
-          <label for="fide-inp-k">K-Factor</label>
-          <select id="fide-inp-k">
-            <option value="auto">Auto-detect</option>
-            <option value="40">K = 40</option>
-            <option value="20">K = 20</option>
-            <option value="10">K = 10</option>
-          </select>
+        <div class="side-stats">
+          <div class="side-stat"><span>Field average</span><b id="side-avg">—</b></div>
+          <div class="side-stat"><span>Performance rating</span><b id="side-perf">—</b></div>
         </div>
+      </section>
+    </aside>
+
+    <!-- ══════════════════════════════════════ MAIN -->
+    <main class="main">
+
+      <!-- hero -->
+      <section class="hero" id="hero"></section>
+
+      <!-- ladder + projection -->
+      <div class="bottom">
+        <section>
+          <div class="sec-head">
+            <span class="eyebrow">Norm ladder</span>
+            <span class="eyebrow-note">margin to earn each level</span>
+          </div>
+          <div class="ladder" id="ladder"></div>
+          <div id="diag"></div>
+        </section>
+
+        <section>
+          <div class="eyebrow" style="margin-bottom:13px">Rating projection</div>
+          <div id="projection"></div>
+        </section>
       </div>
 
-      <!-- Auto-detect extra fields, hidden unless auto is selected -->
-      <div class="meta-row fide-auto-fields" id="fide-auto-fields" style="margin-top:.65rem">
-        <div class="meta-field">
-          <label for="fide-inp-games">Prior FIDE Games</label>
-          <input type="number" id="fide-inp-games" placeholder="e.g. 25" min="0" max="9999" step="1">
-        </div>
-        <div class="meta-field checkbox-field">
-          <input type="checkbox" id="fide-inp-2400">
-          <label for="fide-inp-2400">Ever published at 2400+</label>
-        </div>
-        <div class="meta-field checkbox-field">
-          <input type="checkbox" id="fide-inp-youth">
-          <label for="fide-inp-youth">Under 18 &amp; rated below 2300</label>
-        </div>
+      <!-- FIDE -->
+      <div class="divider">
+        <div class="ln"></div><span class="lbl">FIDE Rating Change</span><div class="ln"></div>
       </div>
-    </div>
 
-    <!-- FIDE output -->
-    <div class="card">
-      <div class="panel-header">
-        <span class="panel-icon blue">♟</span>
-        <div>
-          <div class="panel-title">FIDE Rating Change</div>
-          <div class="panel-sub">Estimated post-event FIDE rating</div>
+      <div class="cross-note">
+        <b>US Chess and FIDE are separate systems.</b> A US Chess rating runs roughly 50–100 points
+        above the same player's FIDE rating — enter FIDE ratings here, not US Chess ones.
+      </div>
+
+      <div class="fide-grid">
+        <section>
+          <div class="sec-head">
+            <span class="eyebrow">FIDE opponents</span>
+            <span class="eyebrow-note">start-of-event rating</span>
+          </div>
+          <div class="opp-card">
+            <div id="fide-opp-list"></div>
+            <button class="btn-add" id="fide-btn-add"><span class="plus">+</span> Add opponent</button>
+          </div>
+
+          <div class="eyebrow" style="margin:18px 0 11px">Your score</div>
+          <div class="pills" id="fide-score-pills"></div>
+
+          <div class="field-row" style="margin-top:18px">
+            <div class="field">
+              <label for="fide-inp-r">Your FIDE rating</label>
+              <input type="number" id="fide-inp-r" inputmode="numeric" placeholder="1789" min="1000" max="3000" step="1">
+            </div>
+            <div class="field">
+              <label for="fide-inp-k">K-factor</label>
+              <select id="fide-inp-k">
+                <option value="auto">Auto-detect</option>
+                <option value="40">40</option>
+                <option value="20">20</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fide-auto" id="fide-auto">
+            <div class="field" style="margin-bottom:12px">
+              <label for="fide-inp-games">Prior FIDE games</label>
+              <input type="number" id="fide-inp-games" inputmode="numeric" placeholder="e.g. 25" min="0" max="9999" step="1">
+            </div>
+            <label class="check" style="margin-top:0"><input type="checkbox" id="fide-inp-2400"> Ever published at 2400+</label>
+            <label class="check"><input type="checkbox" id="fide-inp-youth"> Under 18 &amp; rated below 2300</label>
+          </div>
+        </section>
+
+        <section>
+          <div class="eyebrow" style="margin-bottom:13px">FIDE rating change</div>
+          <div id="fide-output"></div>
+        </section>
+      </div>
+
+      <!-- how it works -->
+      <details>
+        <summary>How this works</summary>
+        <div class="details-body">
+          <p><strong>Norm ladder</strong> uses the official US Chess norm coefficient, not Elo. For title level Y and an opponent's <strong>post-event</strong> rating Rᵢ, let Δ = Y − Rᵢ; then <code>Cᵢ = 0</code> if Δ ≤ −400, <code>0.5 + Δ/800</code> if −400 &lt; Δ ≤ 0, <code>0.5 + Δ/400</code> if 0 &lt; Δ ≤ 200, and <code>1</code> if Δ &gt; 200. Sum to get <code>C<sub>T</sub> = Σ Cᵢ</code>. A norm is earned when the score <em>strictly exceeds</em> C<sub>T</sub> + 1.0 (or + 2.0 if a 3-game event had a 4th-round bye/forfeit). The comparison is full-precision; values are only rounded for display.</p>
+          <p><strong>Points-needed diagnostic</strong> — when the top achievable norm is missed, a counterfactual estimate of how much stronger the (fixed) field would have needed to be: the uniform gap per opponent and the cheapest single-opponent bump, found by binary search since C<sub>T</sub> decreases monotonically with opponent ratings.</p>
+          <p><strong>Rating projection</strong> uses the official US Chess rating formula. N* = 50 / √(0.662 + 0.00000739 × (2569 − R)²) for R ≤ 2355 (else 50); Ne = min(N, N*); K = 800 / (Ne + m); We = Σ Elo-expected(R, Rᵢ); bonus = max(0, K(S − We) − 10√max(m,4)) when m ≥ 3; new rating = R + K(S − We) + bonus. Class floors at 1200–2100; peak-based floor = largest class floor at or below (peak − 200).</p>
+          <p><strong>FIDE</strong> uses its own expected-score (a logistic approximation of the official lookup table, §8.1.2) with the 400-point rating-difference cap for players below 2650 (§8.3.1). K = 40 / 20 / 10 per §8.3.3, with the K×n ≤ 700 cap; change rounded away from zero (§8.3.4); below 1400 shown unrated (§7.2.1). FIDE Handbook B.02, effective 1 March 2024.</p>
+          <p><strong>Performance rating</strong> is the single rating at which expected score equals the actual score, solved numerically (uncapped logistic). Undefined for a clean sweep or total loss.</p>
         </div>
-      </div>
-      <div id="fide-output">
-        <div class="empty">Enter FIDE opponent ratings, your rating, and score above.</div>
-      </div>
-      <div class="footnote">
-        <p>⚠ Uses the logistic formula as an approximation of FIDE's official lookup table (§8.1.2, FIDE Handbook B.02, effective 1 March 2024). FIDE's official figure uses the rounded table and is computed over a rating period — results may differ slightly.</p>
-        <p>⚠ The 400-point cap on rating differences applies for players rated below 2650 (§8.3.1, effective 1 October 2025). K-factor rules per §8.3.3.</p>
-      </div>
-    </div>
+      </details>
+
+      <details id="selftest-details">
+        <summary>Developer self-tests (norm logic)</summary>
+        <div class="details-body" id="selftest-body">Running…</div>
+      </details>
+
+    </main>
   </div>
 
-  <!-- ══════════════════════════════════════════════════ FOOTER -->
-  <footer class="site-footer">
-    <span class="footer-dot" id="updated-dot"></span>
+  <!-- footer -->
+  <footer class="foot">
+    <span class="foot-dot"></span>
     Last updated <strong id="updated-rel">recently</strong>
-    <span class="footer-sep">·</span>
+    <span class="foot-sep">·</span>
     <span id="updated-abs"></span>
   </footer>
 
-</div><!-- /.page-body -->
+</div><!-- /.shell -->
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS  (source: official US Chess rating system specification)
 // ═══════════════════════════════════════════════════════════════════════════
-
 const NORM_LEVELS = [
   ["4th Category",     1200],
   ["3rd Category",     1400],
@@ -909,169 +503,20 @@ const NORM_LEVELS = [
   ["Master",           2200],
   ["Senior Master",    2400],
 ];
-
 const CLASS_FLOORS = [1200,1300,1400,1500,1600,1700,1800,1900,2000,2100];
 const BONUS_B = 10; // effective January 1, 2025
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SHARED HELPER  — player rating is an ARGUMENT, never hardcoded
+// PURE LOGIC  (verified — unchanged from the working calculator)
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Standard Elo expected score — player rating is an ARGUMENT, never hardcoded.
+// Used by the rating projection and performance rating ONLY (never for norms).
 function expectedScore(playerRating, opponentRating) {
   return 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════════════════
-
-let rows = [];
-
-const oppGrid       = document.getElementById("opp-grid");
-const gameBadge     = document.getElementById("game-badge");
-const btnAdd        = document.getElementById("btn-add");
-const inpScore      = document.getElementById("inp-score");
-const inpR          = document.getElementById("inp-r");
-const inpN          = document.getElementById("inp-n");
-const inpPeak       = document.getElementById("inp-peak");
-const normBody      = document.getElementById("norm-body");
-const normCallout   = document.getElementById("norm-callout");
-const ratingContent = document.getElementById("rating-content");
-
-// ═══════════════════════════════════════════════════════════════════════════
-// OPPONENT ROWS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function makeRow() {
-  const numEl = document.createElement("span");
-  numEl.className = "row-num";
-
-  const inputEl = document.createElement("input");
-  inputEl.type = "number";
-  inputEl.min = 100; inputEl.max = 3000; inputEl.step = 1;
-  inputEl.placeholder = "e.g. 1550";
-  inputEl.addEventListener("input", () => { validateInput(inputEl); recalc(); });
-
-  const removeEl = document.createElement("button");
-  removeEl.className = "btn-remove";
-  removeEl.title = "Remove";
-  removeEl.textContent = "✕";
-  removeEl.addEventListener("click", () => removeRow(rowObj));
-
-  const rowObj = { numEl, inputEl, removeEl };
-  rows.push(rowObj);
-  return rowObj;
-}
-
-function validateInput(el) {
-  const v = parseFloat(el.value);
-  const ok = el.value === "" || (Number.isFinite(v) && v >= 100 && v <= 3000);
-  el.classList.toggle("invalid", !ok);
-}
-
-function renderGrid() {
-  while (oppGrid.children.length > 3) oppGrid.removeChild(oppGrid.lastChild);
-  rows.forEach((r, i) => {
-    r.numEl.textContent = i + 1;
-    oppGrid.appendChild(r.numEl);
-    oppGrid.appendChild(r.inputEl);
-    oppGrid.appendChild(r.removeEl);
-  });
-  const m = rows.length;
-  gameBadge.textContent = m === 1 ? "1 game" : `${m} games`;
-}
-
-function addRow() {
-  makeRow();
-  renderGrid();
-  recalc();
-  rows[rows.length - 1].inputEl.focus();
-}
-
-function removeRow(rowObj) {
-  if (rows.length === 1) return;
-  rows = rows.filter(r => r !== rowObj);
-  renderGrid();
-  recalc();
-}
-
-function refreshScoreSelect(m) {
-  const prev = inpScore.value;
-  inpScore.innerHTML = '<option value="">—</option>';
-  for (let s = 0; s <= m; s += 0.5) {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = formatScore(s);
-    if (String(s) === prev) opt.selected = true;
-    inpScore.appendChild(opt);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// UTILITIES
-// ═══════════════════════════════════════════════════════════════════════════
-
-function formatScore(s) { return s.toFixed(1); }
-function f2(n)           { return n.toFixed(2); }
-
-function validRatings() {
-  return rows
-    .map(r => parseFloat(r.inputEl.value))
-    .filter(v => Number.isFinite(v) && v >= 100 && v <= 3000);
-}
-
-function peakFloor(peak) {
-  if (!Number.isFinite(peak)) return null;
-  const basis = Math.round(peak) - 200;
-  let best = null;
-  for (const f of CLASS_FLOORS) { if (f <= basis) best = f; }
-  if (best === null) return { floor: 100, label: "absolute floor (100)" };
-  return { floor: best, label: `class floor (${best})` };
-}
-
-function nStar(R) {
-  if (R > 2355) return 50;
-  return 50 / Math.sqrt(0.662 + 0.00000739 * Math.pow(2569 - R, 2));
-}
-
-// ── Performance rating (system-agnostic) ──────────────────────────────────────
-// The single rating Rp at which a player's expected score against this exact
-// field equals their actual score: Σ expected(Rp, opp_i) = S.
-// Uses the standard logistic expected-score (uncapped), solved by bisection.
-// Undefined (±∞) for a clean sweep (S=0) or perfect score (S=m).
-function perfExpected(perfRating, opponentRating) {
-  return 1 / (1 + Math.pow(10, (opponentRating - perfRating) / 400));
-}
-
-function performanceRating(ratings, score) {
-  const n = ratings.length;
-  if (n === 0 || !Number.isFinite(score)) return { value: null, note: null };
-  if (score <= 0)  return { value: null, note: `0 / ${n} — performance is unbounded (−∞)` };
-  if (score >= n)  return { value: null, note: `${score.toFixed(1)} / ${n} — performance is unbounded (+∞)` };
-
-  let lo = 100, hi = 3500;
-  for (let i = 0; i < 80; i++) {
-    const mid = (lo + hi) / 2;
-    const exp = ratings.reduce((s, opp) => s + perfExpected(mid, opp), 0);
-    if (exp < score) lo = mid; else hi = mid;
-  }
-  return { value: Math.round((lo + hi) / 2), note: null };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// NORM PANEL
-// ═══════════════════════════════════════════════════════════════════════════
-
-// ── Official US Chess norm coefficient Cᵢ (piecewise) ─────────────────────────
-// For title level Y and an opponent's POST-EVENT rating Ri, with Δ = Y − Ri:
-//     Δ ≤ −400        → 0
-//     −400 < Δ ≤ 0    → 0.5 + Δ/800
-//     0 < Δ ≤ 200     → 0.5 + Δ/400
-//     Δ > 200         → 1
-// This is the official norm coefficient — NOT the Elo expected score. US Chess
-// norms use each opponent's POST-EVENT rating (unlike FIDE, which uses the
-// start-of-event rating). The Elo expectedScore() above is used ONLY by the
-// rating-change projection and performance rating, never here.
+// Official US Chess norm coefficient Cᵢ (piecewise), on POST-EVENT opponent ratings.
 function normCi(Y, Ri) {
   const d = Y - Ri;
   if (d <= -400) return 0;
@@ -1079,53 +524,40 @@ function normCi(Y, Ri) {
   if (d <= 200)  return 0.5 + d / 400;
   return 1;
 }
+function normCT(Y, ratings) { return ratings.reduce((s, Ri) => s + normCi(Y, Ri), 0); }
 
-function normCT(Y, ratings) {
-  return ratings.reduce((sum, Ri) => sum + normCi(Y, Ri), 0);
-}
-
-// Core norm decision at FULL floating-point precision (no pre-rounding).
-// A norm is earned iff the score STRICTLY exceeds CT + requiredMargin.
+// Earned iff score STRICTLY exceeds CT + requiredMargin (full precision).
 function normResult(Y, ratings, score, requiredMargin) {
   const CT = normCT(Y, ratings);
   const threshold = CT + requiredMargin;
   const hasScore = Number.isFinite(score);
-  const earned = hasScore && score > threshold;     // strict > , full precision
-  const marginAbove = hasScore ? score - CT : null; // amount scored above expectation
-  return { Y, CT, threshold, requiredMargin, earned, marginAbove };
+  return { Y, CT, threshold, requiredMargin,
+           earned: hasScore && score > threshold,
+           marginAbove: hasScore ? score - CT : null };
 }
 
-// ── "Points needed" diagnostic (counterfactual) ───────────────────────────────
-// CT is monotonically DECREASING in opponent ratings, so binary search converges
-// reliably and handles the piecewise kink at Y automatically. A norm clears when
-// CT < score − requiredMargin (the "target").
-
-// Uniform gap: smallest N such that raising EVERY opponent by N clears the norm.
+// Smallest N s.t. raising EVERY opponent by N clears the norm. CT is monotone ↓.
 function uniformGapNeeded(Y, ratings, score, requiredMargin) {
   const target = score - requiredMargin;
-  if (!(target > 0)) return Infinity;                 // unreachable by opponents alone
-  if (normCT(Y, ratings) < target) return 0;          // already clear
-  let lo = 0, hi = 4000;                              // +4000 drives every Cᵢ to 0
+  if (!(target > 0)) return Infinity;
+  if (normCT(Y, ratings) < target) return 0;
+  let lo = 0, hi = 4000;
   for (let i = 0; i < 60; i++) {
     const mid = (lo + hi) / 2;
-    const ct = normCT(Y, ratings.map(r => r + mid));
-    if (ct < target) hi = mid; else lo = mid;
+    if (normCT(Y, ratings.map(r => r + mid)) < target) hi = mid; else lo = mid;
   }
   return hi;
 }
-
-// Cheapest single opponent: minimum points ONE opponent (others fixed) would need
-// to gain to clear the norm. Sub-Y opponents are cheaper (Cᵢ slope 1/400 below Y
-// vs 1/800 above it), and the per-opponent search surfaces that automatically.
+// Cheapest single opponent bump (others fixed) to clear the norm.
 function cheapestSingleBump(Y, ratings, score, requiredMargin) {
   const target = score - requiredMargin;
   if (!(target > 0)) return null;
-  if (normCT(Y, ratings) < target) return null;       // already clear
+  if (normCT(Y, ratings) < target) return null;
   let best = null;
   ratings.forEach((r, idx) => {
     const others = ratings.reduce((s, rr, j) => (j === idx ? s : s + normCi(Y, rr)), 0);
-    const need = target - others;                     // this opponent's Cᵢ must drop below `need`
-    if (!(need > 0)) return;                           // even Cᵢ=0 here leaves CT ≥ target
+    const need = target - others;
+    if (!(need > 0)) return;
     let lo = 0, hi = 4000;
     for (let i = 0; i < 60; i++) {
       const mid = (lo + hi) / 2;
@@ -1135,726 +567,574 @@ function cheapestSingleBump(Y, ratings, score, requiredMargin) {
   });
   return best;
 }
-
-// A norm normally requires exceeding expectation by > 1.0. Special case: if only
-// 3 games were played and the 4th is a bye/forfeit, the requirement is > 2.0.
 function getRequiredMargin(m) {
   const bye = document.getElementById("inp-bye");
   return (m === 3 && bye && bye.checked) ? 2.0 : 1.0;
 }
 
-function computeNorms(ratings, m, score, requiredMargin) {
-  const hasScore = score !== "" && score !== null && score !== undefined;
-  const S = hasScore ? parseFloat(score) : null;
-  let bestAchievable = -1, bestEarned = -1;
-
-  const nrows = NORM_LEVELS.map(([name, Y]) => {
-    const { CT, threshold, earned, marginAbove } = normResult(Y, ratings, S, requiredMargin);
-    // Display-only: smallest 0.5-multiple that STRICTLY exceeds the threshold.
-    // (Used purely for rendering — the earned/not-earned test above uses the
-    //  full-precision threshold, never this rounded value.)
-    const minSc    = (Math.floor(threshold / 0.5) + 1) * 0.5;
-    const possible = m > threshold;                   // a perfect score (m) must strictly clear
-    return { name, Y, CT, threshold, minSc, possible, earned, marginAbove };
-  });
-
-  nrows.forEach((r, i) => {
-    if (r.possible) bestAchievable = i;
-    if (r.earned)   bestEarned     = i;
-  });
-  return { rows: nrows, bestAchievable, bestEarned, S, hasScore, requiredMargin };
+function nStar(R) {
+  if (R > 2355) return 50;
+  return 50 / Math.sqrt(0.662 + 0.00000739 * Math.pow(2569 - R, 2));
+}
+function peakFloor(peak) {
+  if (!Number.isFinite(peak)) return null;
+  const basis = Math.round(peak) - 200;
+  let best = null;
+  for (const f of CLASS_FLOORS) { if (f <= basis) best = f; }
+  if (best === null) return { floor: 100, label: "absolute floor (100)" };
+  return { floor: best, label: `class floor (${best})` };
 }
 
-function renderNorms(ratings, m, score) {
-  if (ratings.length === 0) {
-    normBody.innerHTML = '<tr><td colspan="5" class="empty">Enter opponent ratings above.</td></tr>';
-    normCallout.innerHTML = "";
-    return;
+// Performance rating — system-agnostic, uncapped logistic, by bisection.
+function perfExpected(perfRating, opponentRating) {
+  return 1 / (1 + Math.pow(10, (opponentRating - perfRating) / 400));
+}
+function performanceRating(ratings, score) {
+  const n = ratings.length;
+  if (n === 0 || !Number.isFinite(score)) return { value: null, note: null };
+  if (score <= 0)  return { value: null, note: `0 / ${n} — unbounded (−∞)` };
+  if (score >= n)  return { value: null, note: `${score.toFixed(1)} / ${n} — unbounded (+∞)` };
+  let lo = 100, hi = 3500;
+  for (let i = 0; i < 80; i++) {
+    const mid = (lo + hi) / 2;
+    if (ratings.reduce((s, opp) => s + perfExpected(mid, opp), 0) < score) lo = mid; else hi = mid;
   }
-
-  const requiredMargin = getRequiredMargin(m);
-  const { rows: nrows, bestAchievable, bestEarned, S, hasScore } = computeNorms(ratings, m, score, requiredMargin);
-
-  normBody.innerHTML = "";
-  nrows.forEach(({ name, Y, CT, threshold, minSc, possible, earned }, i) => {
-    const isBestA = i === bestAchievable;
-    const tr = document.createElement("tr");
-    if (isBestA) tr.className = "row-best";
-
-    const levelHtml = `<div class="lv-name">${name}${isBestA ? '<span class="tag-best">BEST</span>' : ''}</div>
-                       <div class="lv-sub">${Y.toLocaleString()} rating</div>`;
-
-    let statusHtml;
-    if (!hasScore) {
-      statusHtml = possible
-        ? `<span class="pill-possible">${formatScore(minSc)} / ${m}</span>`
-        : `<span class="pill-impossible">Impossible<br><small>needs ${formatScore(minSc)} of ${m}</small></span>`;
-    } else {
-      if (!possible) {
-        statusHtml = `<span class="pill-impossible">Impossible</span>`;
-      } else if (earned) {
-        statusHtml = `<span class="pill-earned">✓ Earned</span>`;
-      } else {
-        statusHtml = `<span class="pill-no">Need ${formatScore(minSc)}</span>`;
-      }
-    }
-
-    tr.innerHTML = `
-      <td>${levelHtml}</td>
-      <td class="r">${f2(CT)}</td>
-      <td class="r">${f2(threshold)}</td>
-      <td class="r">${formatScore(minSc)}&thinsp;/&thinsp;${m}</td>
-      <td class="c">${statusHtml}</td>`;
-    normBody.appendChild(tr);
-  });
-
-  let callHtml = "";
-  if (bestAchievable < 0) {
-    callHtml = `<div class="callout red"><span class="callout-icon">⚠</span>
-      <div class="callout-body"><strong>No norm achievable</strong>No level can be reached even with a perfect score against this field.</div></div>`;
-  } else {
-    const ba = nrows[bestAchievable];
-    callHtml = `<div class="callout blue"><span class="callout-icon">🏆</span>
-      <div class="callout-body"><strong>Highest achievable: ${ba.name}</strong>Needs ${formatScore(ba.minSc)} of ${m} (${ba.Y.toLocaleString()} level).</div></div>`;
-  }
-  if (hasScore) {
-    const perf = performanceRating(ratings, S);
-    if (perf.value !== null) {
-      callHtml += `<div class="callout blue"><span class="callout-icon">🎯</span>
-        <div class="callout-body"><strong>Performance rating: ${perf.value.toLocaleString()}</strong>The US Chess rating at which ${formatScore(S)} / ${m} would be your expected score against this field.</div></div>`;
-    } else if (perf.note) {
-      callHtml += `<div class="callout blue"><span class="callout-icon">🎯</span>
-        <div class="callout-body"><strong>Performance rating: —</strong>${perf.note}.</div></div>`;
-    }
-
-    if (bestEarned >= 0) {
-      const be = nrows[bestEarned];
-      callHtml += `<div class="callout green"><span class="callout-icon">✓</span>
-        <div class="callout-body"><strong>Best norm earned at ${formatScore(S)}: ${be.name}</strong>${be.Y.toLocaleString()} level norm — congratulations!</div></div>`;
-    } else {
-      callHtml += `<div class="callout yellow"><span class="callout-icon">✗</span>
-        <div class="callout-body"><strong>No norm at ${formatScore(S)}</strong>Score not sufficient against this field for any norm level.</div></div>`;
-    }
-
-    // "How close was this?" diagnostic for the highest achievable norm not earned.
-    let targetIdx = -1;
-    for (let i = nrows.length - 1; i >= 0; i--) {
-      if (nrows[i].possible && !nrows[i].earned) { targetIdx = i; break; }
-    }
-    if (targetIdx >= 0) {
-      const t = nrows[targetIdx];
-      const shortBy = t.threshold - S;                 // points of score still needed
-      const uni     = uniformGapNeeded(t.Y, ratings, S, requiredMargin);
-      const single  = cheapestSingleBump(t.Y, ratings, S, requiredMargin);
-
-      let body = `<strong>How close was ${t.name} (${t.Y.toLocaleString()})?</strong>`;
-      body += `You scored ${f2(t.marginAbove)} above expectation (CT = ${f2(t.CT)}); a norm needs more than +${f2(requiredMargin)}, so you came up ${f2(shortBy)} short. `;
-
-      if (!isFinite(uni) || single === null) {
-        body += `Counterfactually, no stronger field could have produced this norm at a score of ${formatScore(S)} — the score itself is at or below the +${f2(requiredMargin)} requirement.`;
-      } else {
-        body += `Counterfactually — opponent ratings are fixed by the games actually played — the field would have needed to be about <strong>+${Math.round(uni)} per opponent</strong> higher, or opponent #${single.index + 1} (${single.oppRating}) alone about <strong>+${Math.round(single.points)}</strong> higher, to flip this to earned.`;
-      }
-      callHtml += `<div class="callout blue"><span class="callout-icon">📐</span><div class="callout-body">${body}</div></div>`;
-    }
-  }
-  normCallout.innerHTML = callHtml;
+  return { value: Math.round((lo + hi) / 2), note: null };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// RATING PANEL
-// ═══════════════════════════════════════════════════════════════════════════
-
-function renderRating(ratings, m, score) {
-  const R    = parseFloat(inpR.value);
-  const N    = parseFloat(inpN.value);
-  const peak = parseFloat(inpPeak.value);
-
-  if (!Number.isFinite(R) || !Number.isFinite(N)) {
-    ratingContent.innerHTML = '<div class="empty">Enter your rating and prior games above.</div>';
-    return;
-  }
-  if (ratings.length === 0) {
-    ratingContent.innerHTML = '<div class="empty">Enter opponent ratings above.</div>';
-    return;
-  }
-
-  const hasScore = score !== "" && score !== null && score !== undefined;
-  const S        = hasScore ? parseFloat(score) : null;
-
-  const Nstar = nStar(R);
-  const Ne    = Math.min(N, Nstar);
-  const K     = 800 / (Ne + m);
-  const We    = ratings.reduce((sum, Ri) => sum + expectedScore(R, Ri), 0);
-
-  let html = "";
-
-  if (hasScore && S !== null) {
-    const baseChange     = K * (S - We);
-    const mStar          = Math.max(m, 4);
-    const bonusThreshold = BONUS_B * Math.sqrt(mStar);
-    const bonus          = m >= 3 ? Math.max(0, baseChange - bonusThreshold) : 0;
-    const R_new          = Math.round(R + baseChange + bonus);
-    const delta          = R_new - R;
-
-    const pf         = peakFloor(Number.isFinite(peak) ? peak : NaN);
-    const floorVal   = pf ? pf.floor : null;
-    const belowFloor = floorVal !== null && R_new < floorVal;
-    const R_display  = belowFloor ? floorVal : R_new;
-    const deltaClass = delta > 0 ? "delta-pos" : delta < 0 ? "delta-neg" : "delta-neu";
-
-    html = `<div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-label">Expected (We)</div>
-        <div class="stat-val">${f2(We)}</div>
-        <div class="stat-sub">of ${m} games</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">N* / Ne</div>
-        <div class="stat-val">${f2(Nstar)}</div>
-        <div class="stat-sub">Ne = ${f2(Ne)}</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">K Factor</div>
-        <div class="stat-val">${f2(K)}</div>
-        <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Base Change</div>
-        <div class="stat-val ${baseChange >= 0 ? "delta-pos" : "delta-neg"}">${baseChange >= 0 ? "+" : ""}${f2(baseChange)}</div>
-        <div class="stat-sub">K × (S − We)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Bonus</div>
-        <div class="stat-val ${bonus > 0 ? "delta-pos" : "delta-neu"}">${bonus > 0 ? "+" : ""}${f2(bonus)}</div>
-        <div class="stat-sub">${m >= 3 ? `thresh ${f2(bonusThreshold)}` : "m < 3, none"}</div>
-      </div>
-      <div class="stat-box highlight">
-        <div class="stat-label">New Rating</div>
-        <div class="stat-val">${R_display.toLocaleString()}</div>
-        <div class="stat-sub"><span class="${deltaClass}">${delta >= 0 ? "+" : ""}${delta}</span> from ${R.toLocaleString()}</div>
-      </div>
-    </div>`;
-
-    if (belowFloor && pf) {
-      html += `<div class="callout yellow"><span class="callout-icon">⚠</span>
-        <div class="callout-body"><strong>Floor applied (${pf.floor})</strong>Projected result (${R_new}) is below your ${pf.label}. Rating cannot drop below ${pf.floor}.</div></div>`;
-    } else if (!pf) {
-      html += `<div class="callout blue"><span class="callout-icon">ℹ</span>
-        <div class="callout-body">Enter your <strong>Peak Rating</strong> above to check whether a floor applies.</div></div>`;
-    }
-    if (bonus > 0) {
-      html += `<div class="callout green"><span class="callout-icon">★</span>
-        <div class="callout-body"><strong>Bonus triggered! +${f2(bonus)} pts</strong>K(S−We) = ${f2(baseChange)} exceeds the B√m* threshold of ${f2(bonusThreshold)}.</div></div>`;
-    }
-
-  } else {
-    html = `<div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-label">Expected (We)</div>
-        <div class="stat-val">${f2(We)}</div>
-        <div class="stat-sub">of ${m} games</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">N* / Ne</div>
-        <div class="stat-val">${f2(Nstar)}</div>
-        <div class="stat-sub">Ne = ${f2(Ne)}</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">K Factor</div>
-        <div class="stat-val">${f2(K)}</div>
-        <div class="stat-sub">800 / (${f2(Ne)} + ${m})</div>
-      </div>
-    </div>
-    <div class="callout blue"><span class="callout-icon">ℹ</span>
-      <div class="callout-body">Select a <strong>Total Score</strong> above to see your projected rating.</div>
-    </div>`;
-  }
-
-  ratingContent.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// RECALC
-// ═══════════════════════════════════════════════════════════════════════════
-
-function recalc() {
-  const ratings = validRatings();
-  const m       = rows.length;
-  const score   = inpScore.value;
-
-  refreshScoreSelect(m);
-  if (score !== "" && parseFloat(score) <= m) inpScore.value = score;
-
-  // The +2.0 bye/forfeit option only applies to a 3-game event.
-  const byeField = document.getElementById("bye-field");
-  if (byeField) byeField.style.display = (m === 3) ? "flex" : "none";
-
-  renderNorms(ratings, m, inpScore.value);
-  renderRating(ratings, m, inpScore.value);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// WIRING
-// ═══════════════════════════════════════════════════════════════════════════
-
-btnAdd.addEventListener("click", addRow);
-inpScore.addEventListener("change", recalc);
-inpR.addEventListener("input",   recalc);
-inpN.addEventListener("input",   recalc);
-inpPeak.addEventListener("input", recalc);
-document.getElementById("inp-bye").addEventListener("change", recalc);
-
-for (let i = 0; i < 5; i++) makeRow();
-renderGrid();
-recalc();
-
-// ═══════════════════════════════════════════════════════════════════════════
-// FIDE RATING CALCULATOR
-// Source: FIDE Handbook B.02, effective 1 March 2024
-// https://handbook.fide.com/chapter/B022024
-// ═══════════════════════════════════════════════════════════════════════════
-
-// FIDE expected score — SEPARATE from the US Chess helper above.
-// Approximates the FIDE lookup table (§8.1.2).
-// 400-point cap on D for players rated below 2650 (§8.3.1, eff. 1 Oct 2025).
+// FIDE pure logic (separate from US Chess) — FIDE Handbook B.02 (1 March 2024).
 function fideExpectedScore(playerRating, opponentRating) {
   let D = playerRating - opponentRating;
-  if (playerRating < 2650) {
-    if (D >  400) D =  400;
-    if (D < -400) D = -400;
-  }
+  if (playerRating < 2650) { if (D > 400) D = 400; if (D < -400) D = -400; }
   return 1 / (1 + Math.pow(10, -D / 400));
 }
-
-// FIDE rounding: nearest integer; 0.5 rounds away from zero (§8.3.4).
-function fideRound(x) {
-  return Math.sign(x) * Math.round(Math.abs(x));
-}
-
-// FIDE K-factor auto-detect (§8.3.3).
-// Returns { K, baseK, rule, capped, capNote }.
+function fideRound(x) { return Math.sign(x) * Math.round(Math.abs(x)); } // away from zero (§8.3.4)
 function fideAutoKFactor(rating, priorGames, everReached2400, youthUnder2300, m) {
   let baseK, rule;
   const ng = Number.isFinite(priorGames) ? priorGames : null;
-
-  if (everReached2400) {
-    baseK = 10;
-    rule  = "Published rating reached 2400 — K=10 is permanent (§8.3.3)";
-  } else if (ng !== null && ng < 30) {
-    baseK = 40;
-    rule  = `New to FIDE list — ${ng} of 30 prior games completed (§8.3.3)`;
-  } else if (youthUnder2300) {
-    baseK = 40;
-    rule  = "Under 18 with rating below 2300 (§8.3.3)";
-  } else {
-    baseK = 20;
-    rule  = ng === null
-      ? "Standard tier assumed — enter prior games to verify K=40 eligibility (§8.3.3)"
-      : "Standard tier — rated below 2400 (§8.3.3)";
-  }
-
-  // K × n ≤ 700 cap (§8.3.3)
+  if (everReached2400)         { baseK = 10; rule = "Reached 2400 — K=10 permanent"; }
+  else if (ng !== null && ng < 30) { baseK = 40; rule = `New — ${ng}/30 prior games`; }
+  else if (youthUnder2300)     { baseK = 40; rule = "Under 18, rated <2300"; }
+  else                         { baseK = 20; rule = ng === null ? "Standard (assumed)" : "Standard — rated <2400"; }
   if (baseK * m > 700) {
-    const Kcapped = Math.floor(700 / m);
-    return { K: Kcapped, baseK, rule, capped: true,
-             capNote: `K×m cap applied: ${baseK}×${m} > 700, reduced to ${Kcapped}` };
+    const Kc = Math.floor(700 / m);
+    return { K: Kc, baseK, rule, capped: true, capNote: `K×m cap: ${baseK}×${m} → ${Kc}` };
   }
   return { K: baseK, baseK, rule, capped: false, capNote: "" };
 }
 
-// ── FIDE state ──────────────────────────────────────────────────────────────
-let fideRows = [];
+// ── formatting helpers ──
+function f1(n) { return n.toFixed(1); }
+function f2(n) { return n.toFixed(2); }
+function signed(n, dp) { return (n >= 0 ? "+" : "−") + Math.abs(n).toFixed(dp); }
+function scoreLabel(v) { return Number.isInteger(v) ? String(v) : String(v); }
 
-const fideOppGrid    = document.getElementById("fide-opp-grid");
-const fideGameBadge  = document.getElementById("fide-game-badge");
-const fideBtnAdd     = document.getElementById("fide-btn-add");
-const fideInpScore   = document.getElementById("fide-inp-score");
-const fideInpR       = document.getElementById("fide-inp-r");
-const fideInpK       = document.getElementById("fide-inp-k");
-const fideInpGames   = document.getElementById("fide-inp-games");
-const fideInp2400    = document.getElementById("fide-inp-2400");
-const fideInpYouth   = document.getElementById("fide-inp-youth");
-const fideAutoFields = document.getElementById("fide-auto-fields");
-const fideOutput     = document.getElementById("fide-output");
+// computeNorms — pure given (ratings, m, score, requiredMargin)
+function computeNorms(ratings, m, score, requiredMargin) {
+  const hasScore = score !== "" && score !== null && score !== undefined;
+  const S = hasScore ? parseFloat(score) : null;
+  let bestAchievable = -1, bestEarned = -1;
+  const nrows = NORM_LEVELS.map(([name, Y]) => {
+    const { CT, threshold, earned, marginAbove } = normResult(Y, ratings, S, requiredMargin);
+    const minSc = (Math.floor(threshold / 0.5) + 1) * 0.5;
+    const possible = m > threshold;
+    return { name, Y, CT, threshold, minSc, possible, earned, marginAbove };
+  });
+  nrows.forEach((r, i) => { if (r.possible) bestAchievable = i; if (r.earned) bestEarned = i; });
+  return { rows: nrows, bestAchievable, bestEarned, S, hasScore, requiredMargin };
+}
 
-function makeFideRow() {
-  const numEl = document.createElement("span");
-  numEl.className = "row-num";
+// ═══════════════════════════════════════════════════════════════════════════
+// SCORE PILLS (shared widget)
+// ═══════════════════════════════════════════════════════════════════════════
+function renderPills(container, m, current, pick) {
+  container.innerHTML = "";
+  for (let k = 0; k <= 2 * m; k++) {
+    const v = k / 2;
+    const pill = document.createElement("button");
+    pill.type = "button";
+    pill.className = "pill" + (String(v) === String(current) ? " active" : "");
+    pill.textContent = scoreLabel(v);
+    pill.addEventListener("click", () => pick(String(v)));
+    container.appendChild(pill);
+  }
+}
 
+// ═══════════════════════════════════════════════════════════════════════════
+// US CHESS — state, rows, render
+// ═══════════════════════════════════════════════════════════════════════════
+let usRows = [];
+let usScore = "";
+
+const oppList   = document.getElementById("opp-list");
+const btnAdd    = document.getElementById("btn-add");
+const scorePills= document.getElementById("score-pills");
+const inpR      = document.getElementById("inp-r");
+const inpN      = document.getElementById("inp-n");
+const inpPeak   = document.getElementById("inp-peak");
+const byeField  = document.getElementById("bye-field");
+const heroEl    = document.getElementById("hero");
+const ladderEl  = document.getElementById("ladder");
+const diagEl    = document.getElementById("diag");
+const projEl    = document.getElementById("projection");
+const sideAvg   = document.getElementById("side-avg");
+const sidePerf  = document.getElementById("side-perf");
+const mastCount = document.getElementById("mast-count");
+
+function makeRow(list, arr, recalcFn, withExp) {
+  const el = document.createElement("div");
+  el.className = "opp-row";
+  const numEl = document.createElement("span"); numEl.className = "opp-n num";
   const inputEl = document.createElement("input");
-  inputEl.type = "number";
-  inputEl.min = 1000; inputEl.max = 3000; inputEl.step = 1;
-  inputEl.placeholder = "e.g. 1550";
-  inputEl.addEventListener("input", () => { validateFideInput(inputEl); fideRecalc(); });
-
-  const removeEl = document.createElement("button");
-  removeEl.className = "btn-remove";
-  removeEl.title = "Remove";
-  removeEl.textContent = "✕";
-  removeEl.addEventListener("click", () => removeFideRow(rowObj));
-
-  const rowObj = { numEl, inputEl, removeEl };
-  fideRows.push(rowObj);
+  inputEl.type = "number"; inputEl.inputMode = "numeric";
+  inputEl.className = "opp-input num"; inputEl.placeholder = "—";
+  inputEl.min = 100; inputEl.max = 3000; inputEl.step = 1;
+  const expEl = document.createElement("span"); expEl.className = "opp-exp num";
+  const xEl = document.createElement("button"); xEl.className = "opp-x"; xEl.textContent = "✕"; xEl.title = "Remove";
+  const rowObj = { el, numEl, inputEl, expEl, xEl };
+  inputEl.addEventListener("input", () => {
+    const v = parseFloat(inputEl.value);
+    inputEl.classList.toggle("invalid", inputEl.value !== "" && !(Number.isFinite(v) && v >= 100 && v <= 3000));
+    recalcFn();
+  });
+  xEl.addEventListener("click", () => {
+    if (arr.length === 1) return;
+    const i = arr.indexOf(rowObj); if (i >= 0) arr.splice(i, 1);
+    recalcFn();
+  });
+  el.appendChild(numEl); el.appendChild(inputEl);
+  if (withExp) el.appendChild(expEl);
+  el.appendChild(xEl);
   return rowObj;
 }
 
-function validateFideInput(el) {
-  const v = parseFloat(el.value);
-  const ok = el.value === "" || (Number.isFinite(v) && v >= 1000 && v <= 3000);
-  el.classList.toggle("invalid", !ok);
+function renderList(list, arr) {
+  list.innerHTML = "";
+  arr.forEach((r, i) => { r.numEl.textContent = i + 1; list.appendChild(r.el); });
 }
 
-function renderFideGrid() {
-  while (fideOppGrid.children.length > 3) fideOppGrid.removeChild(fideOppGrid.lastChild);
-  fideRows.forEach((r, i) => {
-    r.numEl.textContent = i + 1;
-    fideOppGrid.appendChild(r.numEl);
-    fideOppGrid.appendChild(r.inputEl);
-    fideOppGrid.appendChild(r.removeEl);
-  });
-  const m = fideRows.length;
-  fideGameBadge.textContent = m === 1 ? "1 game" : `${m} games`;
+function validRatings(arr, lo) {
+  return arr.map(r => parseFloat(r.inputEl.value))
+            .filter(v => Number.isFinite(v) && v >= lo && v <= 3000);
 }
 
-function addFideRow() {
-  makeFideRow();
-  renderFideGrid();
-  fideRecalc();
-  fideRows[fideRows.length - 1].inputEl.focus();
+// ── hero ──
+function renderHero(ratings, m, norm) {
+  if (ratings.length === 0) {
+    heroEl.innerHTML = `<div class="hero-knight">♞</div><div class="hero-empty">Enter opponent ratings to see your top norm result.</div>`;
+    return;
+  }
+  const idx = norm.bestAchievable;
+  if (idx < 0) {
+    heroEl.innerHTML = `<div class="hero-knight">♞</div><div class="hero-main">
+      <div class="hero-kicker-row"><span class="hero-kicker">Top norm result</span></div>
+      <div class="hero-title">No norm reachable</div>
+      <div class="hero-sub">No level can be cleared even with a perfect score against this field.</div></div>`;
+    return;
+  }
+  const row = norm.rows[idx];
+  const sub = `${row.Y.toLocaleString()} LEVEL · NORM AT THIS FIELD`;
+
+  if (!norm.hasScore) {
+    heroEl.innerHTML = `<div class="hero-knight">♞</div>
+      <div class="hero-main">
+        <div class="hero-kicker-row"><span class="hero-kicker">Top achievable</span></div>
+        <div class="hero-title">${row.name}</div>
+        <div class="hero-sub">${sub}</div>
+      </div>
+      <div class="hero-div"></div>
+      <div class="hero-side">
+        <div class="hero-side-label">Needs</div>
+        <div class="hero-big num">${f1(row.minSc)}</div>
+        <div class="hero-detail num"><div class="ln"><span>of</span><b>${m} games</b></div><div class="ln"><span>threshold</span><b>${f2(row.threshold)}</b></div></div>
+      </div>`;
+    return;
+  }
+
+  const S = norm.S;
+  const cleared = row.earned;
+  const by = cleared ? (S - row.threshold) : (row.threshold - S);
+  const pill = cleared ? `<span class="hero-pill earned">Earned</span>`
+                       : (by <= 0.5 ? `<span class="hero-pill miss">Near miss</span>`
+                                    : `<span class="hero-pill out">Missed</span>`);
+  const pct = Math.max(0, Math.min(100, (S / row.threshold) * 100));
+  const fillColor = cleared ? "#7FD6A6" : "var(--gold)";
+
+  heroEl.innerHTML = `<div class="hero-knight">♞</div>
+    <div class="hero-main">
+      <div class="hero-kicker-row"><span class="hero-kicker">Top norm result</span>${pill}</div>
+      <div class="hero-title">${row.name}</div>
+      <div class="hero-sub">${sub}</div>
+      <div class="hero-bar-wrap">
+        <div class="hero-bar"><div class="hero-bar-fill" style="width:${pct.toFixed(1)}%;background:${fillColor}"></div></div>
+        <div class="hero-bar-legend num"><span>0.00</span><span>scored ${f2(S)}</span><span>threshold ${f2(row.threshold)}</span></div>
+      </div>
+    </div>
+    <div class="hero-div"></div>
+    <div class="hero-side">
+      <div class="hero-side-label">${cleared ? "Cleared by" : "Missed by"}</div>
+      <div class="hero-big num ${cleared ? "pos" : ""}">${f2(by)}</div>
+      <div class="hero-detail num">
+        <div class="ln"><span>needed</span><b>${f2(row.threshold)}</b></div>
+        <div class="ln"><span>scored</span><b>${f2(S)}</b></div>
+      </div>
+    </div>`;
 }
 
-function removeFideRow(rowObj) {
-  if (fideRows.length === 1) return;
-  fideRows = fideRows.filter(r => r !== rowObj);
-  renderFideGrid();
-  fideRecalc();
-}
+// ── ladder ──
+function renderLadder(ratings, m, norm) {
+  if (ratings.length === 0) { ladderEl.innerHTML = `<div class="out-empty">Enter opponents to build the ladder.</div>`; diagEl.innerHTML = ""; return; }
+  const focusIdx = (() => { for (let i = norm.rows.length - 1; i >= 0; i--) if (norm.rows[i].possible && !norm.rows[i].earned) return i; return -1; })();
 
-function refreshFideScoreSelect(m) {
-  const prev = fideInpScore.value;
-  fideInpScore.innerHTML = '<option value="">—</option>';
-  for (let s = 0; s <= m; s += 0.5) {
-    const opt = document.createElement("option");
-    opt.value = s;
-    opt.textContent = s.toFixed(1);
-    if (String(s) === prev) opt.selected = true;
-    fideInpScore.appendChild(opt);
+  ladderEl.innerHTML = norm.rows.map((row, i) => {
+    let rail, bg, border, nameColor, weight, status, statusColor, marginTxt, marginColor;
+    if (!norm.hasScore) {
+      if (row.possible) {
+        const focus = i === norm.bestAchievable;
+        rail = focus ? "var(--gold)" : "var(--hair)"; bg = focus ? "var(--gold-bg)" : "var(--card-2)";
+        border = focus ? "var(--gold-bd)" : "var(--hair-3)"; nameColor = "var(--ink)"; weight = focus ? 700 : 500;
+        status = "Possible"; statusColor = focus ? "var(--gold-ink)" : "var(--muted)";
+        marginTxt = `${f1(row.minSc)}/${m}`; marginColor = "var(--ink-3)";
+      } else {
+        rail = "var(--hair-2)"; bg = "var(--card-2)"; border = "var(--hair-3)"; nameColor = "var(--faint)";
+        weight = 500; status = "Out of reach"; statusColor = "var(--faint-3)"; marginTxt = "—"; marginColor = "var(--faint-3)";
+      }
+    } else {
+      const margin = norm.S - row.threshold; // + earned, − short
+      marginTxt = signed(margin, 2);
+      if (row.earned) {
+        const top = i === norm.bestEarned;
+        rail = top ? "var(--green)" : "var(--hair)"; bg = top ? "var(--green-bg)" : "var(--card-2)";
+        border = top ? "var(--green-bd)" : "var(--hair-3)"; nameColor = top ? "var(--forest)" : "var(--ink-3)";
+        weight = top ? 700 : 500; status = "Earned"; statusColor = top ? "var(--green)" : "var(--muted)"; marginColor = "var(--green)";
+      } else if (row.possible) {
+        const near = i === focusIdx && (row.threshold - norm.S) <= 0.5;
+        rail = near ? "var(--gold)" : "var(--hair)"; bg = near ? "var(--gold-bg)" : "var(--card-2)";
+        border = near ? "var(--gold-bd)" : "var(--hair-3)"; nameColor = near ? "var(--forest)" : "var(--ink-2)";
+        weight = near ? 700 : 500; status = near ? "Near miss" : "Missed"; statusColor = near ? "var(--gold-ink)" : "var(--faint)";
+        marginColor = near ? "var(--gold-ink)" : "var(--muted)";
+      } else {
+        rail = "var(--hair-2)"; bg = "var(--card-2)"; border = "var(--hair-3)"; nameColor = "var(--faint)";
+        weight = 500; status = "Out of reach"; statusColor = "var(--faint-3)"; marginTxt = "—"; marginColor = "var(--faint-3)";
+      }
+    }
+    return `<div class="lad-row" style="background:${bg};border-color:${border}">
+      <div class="lad-rail" style="background:${rail}"></div>
+      <div class="lad-name" style="color:${nameColor};font-weight:${weight}">${row.name}</div>
+      <div class="lad-level num">${row.Y}</div>
+      <div class="lad-margin num" style="color:${marginColor}">${marginTxt}</div>
+      <div class="lad-status" style="color:${statusColor}">${status}</div>
+    </div>`;
+  }).join("");
+
+  // diagnostic
+  diagEl.innerHTML = "";
+  if (norm.hasScore && focusIdx >= 0) {
+    const t = norm.rows[focusIdx];
+    const uni = uniformGapNeeded(t.Y, ratings, norm.S, norm.requiredMargin);
+    const single = cheapestSingleBump(t.Y, ratings, norm.S, norm.requiredMargin);
+    const shortBy = t.threshold - norm.S;
+    let body = `<b>How close was ${t.name} (${t.Y.toLocaleString()})?</b> You scored ${f2(t.marginAbove)} above expectation (C<sub>T</sub> = ${f2(t.CT)}); a norm needs more than +${f2(norm.requiredMargin)}, so you came up ${f2(shortBy)} short. `;
+    if (!isFinite(uni) || single === null) {
+      body += `Counterfactually, no stronger field clears this at a score of ${f1(norm.S)} — the score itself is at or below the +${f2(norm.requiredMargin)} requirement.`;
+    } else {
+      body += `Counterfactually — opponent ratings are fixed by the games played — the field would have needed to be about <b>+${Math.round(uni)} per opponent</b> higher, or opponent #${single.index + 1} (${single.oppRating}) alone about <b>+${Math.round(single.points)}</b> higher, to flip this to earned.`;
+    }
+    diagEl.innerHTML = `<div class="diag">${body}</div>`;
   }
 }
 
-function fideValidRatings() {
-  return fideRows
-    .map(r => parseFloat(r.inputEl.value))
-    .filter(v => Number.isFinite(v) && v >= 1000 && v <= 3000);
+// ── per-opponent Cᵢ to the focus norm ──
+function renderOppExps(norm) {
+  const focusY = norm.bestAchievable >= 0 ? NORM_LEVELS[norm.bestAchievable][1] : null;
+  usRows.forEach(r => {
+    const v = parseFloat(r.inputEl.value);
+    if (focusY !== null && Number.isFinite(v) && v >= 100 && v <= 3000) {
+      r.expEl.textContent = normCi(focusY, v).toFixed(2);
+      r.expEl.title = `Cᵢ toward ${NORM_LEVELS[norm.bestAchievable][0]} (${focusY})`;
+    } else { r.expEl.textContent = ""; r.expEl.title = ""; }
+  });
 }
+
+// ── rating projection ──
+function renderProjection(ratings, m, score) {
+  const R = parseFloat(inpR.value), N = parseFloat(inpN.value), peak = parseFloat(inpPeak.value);
+  if (!Number.isFinite(R) || !Number.isFinite(N)) { projEl.innerHTML = `<div class="out-card"><div class="out-empty">Enter your rating and prior games.</div></div>`; return; }
+  if (ratings.length === 0) { projEl.innerHTML = `<div class="out-card"><div class="out-empty">Enter opponent ratings.</div></div>`; return; }
+
+  const Nstar = nStar(R), Ne = Math.min(N, Nstar), K = 800 / (Ne + m);
+  const We = ratings.reduce((s, Ri) => s + expectedScore(R, Ri), 0);
+  const hasScore = score !== "" && score !== null;
+  const S = hasScore ? parseFloat(score) : null;
+
+  if (!hasScore) {
+    projEl.innerHTML = `<div class="out-card">
+      <div class="out-label">Projection</div>
+      <div class="out-empty" style="padding-bottom:14px">Pick a score to project your new rating.</div>
+      <div class="out-stats">
+        <div class="out-stat"><div class="l">Expected</div><div class="v num">${f2(We)}</div></div>
+        <div class="out-stat"><div class="l">N* / Ne</div><div class="v num">${f2(Ne)}</div></div>
+        <div class="out-stat"><div class="l">K</div><div class="v num">${f2(K)}</div></div>
+      </div></div>`;
+    return;
+  }
+
+  const baseChange = K * (S - We);
+  const mStar = Math.max(m, 4), bonusThreshold = BONUS_B * Math.sqrt(mStar);
+  const bonus = m >= 3 ? Math.max(0, baseChange - bonusThreshold) : 0;
+  const R_new = Math.round(R + baseChange + bonus), delta = R_new - R;
+  const pf = peakFloor(Number.isFinite(peak) ? peak : NaN);
+  const belowFloor = pf && R_new < pf.floor;
+  const R_display = belowFloor ? pf.floor : R_new;
+  const dClass = delta > 0 ? "pos" : delta < 0 ? "neg" : "neu";
+
+  let note = "";
+  if (belowFloor) note = `<div class="out-note gold"><b>Floor applied (${pf.floor}).</b> Projected ${R_new} is below your ${pf.label}.</div>`;
+  else if (bonus > 0) note = `<div class="out-note green"><b>Bonus +${f2(bonus)}.</b> K(S−We)=${f2(baseChange)} exceeds the B√m* threshold ${f2(bonusThreshold)}.</div>`;
+
+  projEl.innerHTML = `<div class="out-card">
+    <div class="out-label">New rating</div>
+    <div class="out-top">
+      <div class="out-big num">${R_display.toLocaleString()}</div>
+      <div class="out-delta"><div class="d ${dClass} num">${signed(delta, 0)}</div><div class="from num">from ${R.toLocaleString()}</div></div>
+    </div>
+    <div class="out-stats">
+      <div class="out-stat"><div class="l">Expected</div><div class="v num">${f2(We)}</div></div>
+      <div class="out-stat"><div class="l">K-factor</div><div class="v num">${f2(K)}</div></div>
+      <div class="out-stat"><div class="l">Bonus</div><div class="v num">${bonus > 0 ? "+" + f2(bonus) : "0"}</div></div>
+    </div>
+    ${note}
+  </div>`;
+}
+
+function renderSidebarStats(ratings, m, score) {
+  sideAvg.textContent = ratings.length ? Math.round(ratings.reduce((a, b) => a + b, 0) / ratings.length).toLocaleString() : "—";
+  if (ratings.length && score !== "" && score !== null) {
+    const p = performanceRating(ratings, parseFloat(score));
+    sidePerf.textContent = p.value !== null ? p.value.toLocaleString() : "—";
+  } else sidePerf.textContent = "—";
+}
+
+function recalc() {
+  const ratings = validRatings(usRows, 100);
+  const m = usRows.length;
+  if (usScore !== "" && parseFloat(usScore) > m) usScore = "";
+  renderList(oppList, usRows);
+  renderPills(scorePills, m, usScore, v => { usScore = (usScore === v ? "" : v); recalc(); });
+  byeField.style.display = (m === 3) ? "flex" : "none";
+
+  const norm = computeNorms(ratings, m, usScore, getRequiredMargin(m));
+  renderOppExps(norm);
+  renderHero(ratings, m, norm);
+  renderLadder(ratings, m, norm);
+  renderProjection(ratings, m, usScore);
+  renderSidebarStats(ratings, m, usScore);
+
+  const cnt = m === 1 ? "1 game" : `${m} games`;
+  mastCount.innerHTML = (usScore !== "") ? `${cnt} · ${f1(parseFloat(usScore))} / ${m}` : cnt;
+}
+
+function addUsRow() {
+  const r = makeRow(oppList, usRows, recalc, true);
+  usRows.push(r); recalc(); r.inputEl.focus();
+}
+btnAdd.addEventListener("click", addUsRow);
+inpR.addEventListener("input", recalc);
+inpN.addEventListener("input", recalc);
+inpPeak.addEventListener("input", recalc);
+document.getElementById("inp-bye").addEventListener("change", recalc);
+
+for (let i = 0; i < 5; i++) usRows.push(makeRow(oppList, usRows, recalc, true));
+recalc();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIDE — state, rows, render
+// ═══════════════════════════════════════════════════════════════════════════
+let fideRows = [];
+let fideScore = "";
+
+const fideList    = document.getElementById("fide-opp-list");
+const fideBtnAdd  = document.getElementById("fide-btn-add");
+const fidePills   = document.getElementById("fide-score-pills");
+const fideInpR    = document.getElementById("fide-inp-r");
+const fideInpK    = document.getElementById("fide-inp-k");
+const fideAuto    = document.getElementById("fide-auto");
+const fideInpGames= document.getElementById("fide-inp-games");
+const fideInp2400 = document.getElementById("fide-inp-2400");
+const fideInpYouth= document.getElementById("fide-inp-youth");
+const fideOutput  = document.getElementById("fide-output");
 
 function renderFideOutput() {
-  const ratings = fideValidRatings();
-  const m       = fideRows.length;
-  const R       = parseFloat(fideInpR.value);
-  const score   = fideInpScore.value;
-  const kMode   = fideInpK.value;
+  const ratings = validRatings(fideRows, 1000);
+  const m = fideRows.length;
+  const R = parseFloat(fideInpR.value);
+  if (!Number.isFinite(R)) { fideOutput.innerHTML = `<div class="out-card"><div class="out-empty">Enter your FIDE rating.</div></div>`; return; }
+  if (ratings.length === 0) { fideOutput.innerHTML = `<div class="out-card"><div class="out-empty">Enter opponent FIDE ratings.</div></div>`; return; }
 
-  if (!Number.isFinite(R)) {
-    fideOutput.innerHTML = '<div class="empty">Enter your FIDE rating above.</div>';
-    return;
-  }
-  if (ratings.length === 0) {
-    fideOutput.innerHTML = '<div class="empty">Enter opponent FIDE ratings above.</div>';
-    return;
-  }
-
-  // Resolve K
   let kInfo;
-  if (kMode === "auto") {
-    const priorGames  = parseFloat(fideInpGames.value);
-    const everReached = fideInp2400.checked;
-    const youth       = fideInpYouth.checked;
-    kInfo = fideAutoKFactor(R, priorGames, everReached, youth, m);
+  if (fideInpK.value === "auto") {
+    kInfo = fideAutoKFactor(R, parseFloat(fideInpGames.value), fideInp2400.checked, fideInpYouth.checked, m);
   } else {
-    const manualK  = parseInt(kMode);
-    const capNeeded = manualK * m > 700;
-    const Kfinal   = capNeeded ? Math.floor(700 / m) : manualK;
-    kInfo = { K: Kfinal, baseK: manualK, rule: "Manual override",
-               capped: capNeeded,
-               capNote: capNeeded ? `K×m cap: ${manualK}×${m} > 700, reduced to ${Kfinal}` : "" };
+    const mk = parseInt(fideInpK.value), capNeeded = mk * m > 700, Kf = capNeeded ? Math.floor(700 / m) : mk;
+    kInfo = { K: Kf, baseK: mk, rule: "Manual", capped: capNeeded, capNote: capNeeded ? `K×m cap → ${Kf}` : "" };
   }
   const { K, rule, capped, capNote } = kInfo;
 
-  // Per-game expected scores
   const games = ratings.map(opp => {
-    const rawD     = R - opp;
-    const capApplied = R < 2650 && Math.abs(rawD) > 400;
-    const D        = R < 2650 ? Math.max(-400, Math.min(400, rawD)) : rawD;
-    const E        = 1 / (1 + Math.pow(10, -D / 400));
-    return { opp, rawD, D, capApplied, E };
+    const rawD = R - opp, capApplied = R < 2650 && Math.abs(rawD) > 400;
+    const D = R < 2650 ? Math.max(-400, Math.min(400, rawD)) : rawD;
+    return { opp, rawD, D, capApplied, E: 1 / (1 + Math.pow(10, -D / 400)) };
   });
+  const We = games.reduce((s, g) => s + g.E, 0);
+  const hasScore = fideScore !== "" && fideScore !== null;
+  const S = hasScore ? parseFloat(fideScore) : null;
+  const capStat = R < 2650 ? "400" : "—";
 
-  const We      = games.reduce((sum, g) => sum + g.E, 0);
-  const hasScore = score !== "" && score !== null;
-  const S        = hasScore ? parseFloat(score) : null;
-
-  let html = "";
-
-  if (hasScore && S !== null) {
-    const rawDelta = K * (S - We);
-    const deltaR   = fideRound(rawDelta);
-    const R_new    = R + deltaR;
-    const dClass   = deltaR > 0 ? "delta-pos" : deltaR < 0 ? "delta-neg" : "delta-neu";
-    const fperf    = performanceRating(ratings, S);
-
-    html = `<div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-label">Expected (We)</div>
-        <div class="stat-val">${f2(We)}</div>
-        <div class="stat-sub">of ${m} games</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">K-Factor</div>
-        <div class="stat-val">${K}</div>
-        <div class="stat-sub" style="font-size:.67rem;line-height:1.4">${rule}${capped ? `<br><span class="cap-note">${capNote}</span>` : ""}</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Rating Change</div>
-        <div class="stat-val ${dClass}">${deltaR >= 0 ? "+" : ""}${deltaR}</div>
-        <div class="stat-sub">K × (S − We)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">Performance</div>
-        <div class="stat-val">${fperf.value !== null ? fperf.value.toLocaleString() : "—"}</div>
-        <div class="stat-sub">${fperf.value !== null ? "this event" : "unbounded"}</div>
-      </div>
-      <div class="stat-box highlight">
-        <div class="stat-label">New Rating</div>
-        <div class="stat-val">${R_new.toLocaleString()}</div>
-        <div class="stat-sub"><span class="${dClass}">${deltaR >= 0 ? "+" : ""}${deltaR}</span> from ${R.toLocaleString()}</div>
-      </div>
-    </div>`;
-
-    // Per-game breakdown table
-    html += `<div class="table-wrap" style="margin-top:.9rem">
-      <table>
-        <thead><tr>
-          <th>Game</th>
-          <th class="r">Opp Rating</th>
-          <th class="r">Diff (D)</th>
-          <th class="r">Capped D</th>
-          <th class="r">Expected E</th>
-        </tr></thead>
-        <tbody>`;
-    games.forEach((g, i) => {
-      const sign = v => (v >= 0 ? "+" : "") + v;
-      html += `<tr>
-        <td>${i + 1}</td>
-        <td class="r">${g.opp}</td>
-        <td class="r">${sign(g.rawD)}</td>
-        <td class="r">${g.capApplied
-          ? `<span style="color:var(--amber);font-weight:600">${sign(g.D)} ⚠</span>`
-          : sign(g.D)}</td>
-        <td class="r">${f2(g.E)}</td>
-      </tr>`;
-    });
-    html += `<tr style="font-weight:700;background:var(--surface-2)">
-        <td colspan="4" class="r" style="color:var(--ink-faint);font-size:.78rem;font-weight:600">Total We</td>
-        <td class="r">${f2(We)}</td>
-      </tr></tbody>
-      </table>
-    </div>`;
-
-    // Result callout
-    const callClass = deltaR > 0 ? "green" : deltaR < 0 ? "red" : "blue";
-    const callIcon  = deltaR > 0 ? "↑" : deltaR < 0 ? "↓" : "→";
-    const callMsg   = deltaR > 0
-      ? `<strong>Rating increases by +${deltaR}</strong>${R.toLocaleString()} → ${R_new.toLocaleString()}`
-      : deltaR < 0
-      ? `<strong>Rating decreases by ${deltaR}</strong>${R.toLocaleString()} → ${R_new.toLocaleString()}`
-      : `<strong>No rating change</strong>Score exactly matched expectation.`;
-    html += `<div class="callout ${callClass}" style="margin-top:.85rem">
-      <span class="callout-icon">${callIcon}</span>
-      <div class="callout-body">${callMsg}</div>
-    </div>`;
-
-    // Floor warning (§7.2.1)
-    if (R_new < 1400) {
-      html += `<div class="callout yellow" style="margin-top:.65rem">
-        <span class="callout-icon">⚠</span>
-        <div class="callout-body"><strong>Below FIDE floor</strong>Ratings below 1400 are shown as unrated on the next list (§7.2.1).</div>
-      </div>`;
-    }
-
-  } else {
-    // No score yet — show partial info
-    html = `<div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-label">Expected (We)</div>
-        <div class="stat-val">${f2(We)}</div>
-        <div class="stat-sub">of ${m} games</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-label">K-Factor</div>
-        <div class="stat-val">${K}</div>
-        <div class="stat-sub" style="font-size:.67rem;line-height:1.4">${rule}${capped ? `<br><span class="cap-note">${capNote}</span>` : ""}</div>
-      </div>
-    </div>
-    <div class="callout blue">
-      <span class="callout-icon">ℹ</span>
-      <div class="callout-body">Select a <strong>Total Score</strong> above to see your projected FIDE rating.</div>
-    </div>`;
+  if (!hasScore) {
+    fideOutput.innerHTML = `<div class="out-card">
+      <div class="out-label">FIDE projection</div>
+      <div class="out-empty" style="padding-bottom:14px">Pick a score to project your FIDE change.</div>
+      <div class="out-stats">
+        <div class="out-stat"><div class="l">Expected</div><div class="v num">${f2(We)}</div></div>
+        <div class="out-stat"><div class="l">K-factor</div><div class="v num">${K}</div></div>
+        <div class="out-stat"><div class="l">Cap</div><div class="v num">${capStat}</div></div>
+      </div></div>`;
+    return;
   }
 
-  fideOutput.innerHTML = html;
+  const deltaR = fideRound(K * (S - We)), R_new = R + deltaR, dClass = deltaR > 0 ? "pos" : deltaR < 0 ? "neg" : "neu";
+  let breakdown = `<table class="pg-table"><thead><tr><th>Game</th><th>Opp</th><th>Diff</th><th>Capped</th><th>E</th></tr></thead><tbody>`;
+  games.forEach((g, i) => {
+    breakdown += `<tr><td>${i + 1}</td><td>${g.opp}</td><td>${signed(g.rawD, 0)}</td><td>${g.capApplied ? `<span class="pg-cap">${signed(g.D, 0)} ⚠</span>` : signed(g.D, 0)}</td><td>${f2(g.E)}</td></tr>`;
+  });
+  breakdown += `</tbody></table>`;
+
+  let note = "";
+  if (R_new < 1400) note = `<div class="out-note gold"><b>Below FIDE floor.</b> Ratings under 1400 show as unrated next list (§7.2.1).</div>`;
+  else if (capped) note = `<div class="out-note gold"><b>${capNote}</b> (§8.3.3).</div>`;
+
+  fideOutput.innerHTML = `<div class="out-card">
+    <div class="out-label">New FIDE rating</div>
+    <div class="out-top">
+      <div class="out-big num">${R_new.toLocaleString()}</div>
+      <div class="out-delta"><div class="d ${dClass} num">${signed(deltaR, 0)}</div><div class="from num">from ${R.toLocaleString()}</div></div>
+    </div>
+    <div class="out-stats">
+      <div class="out-stat"><div class="l">Expected</div><div class="v num">${f2(We)}</div></div>
+      <div class="out-stat" title="${rule}"><div class="l">K-factor</div><div class="v num">${K}</div></div>
+      <div class="out-stat"><div class="l">Cap</div><div class="v num">${capStat}</div></div>
+    </div>
+    ${note}
+    ${breakdown}
+  </div>`;
 }
 
 function fideRecalc() {
-  const m     = fideRows.length;
-  const score = fideInpScore.value;
-
-  refreshFideScoreSelect(m);
-  if (score !== "" && parseFloat(score) <= m) fideInpScore.value = score;
-
-  // Show auto-detect fields only when auto is selected
-  fideAutoFields.classList.toggle("visible", fideInpK.value === "auto");
-
+  const m = fideRows.length;
+  if (fideScore !== "" && parseFloat(fideScore) > m) fideScore = "";
+  renderList(fideList, fideRows);
+  renderPills(fidePills, m, fideScore, v => { fideScore = (fideScore === v ? "" : v); fideRecalc(); });
+  fideAuto.classList.toggle("show", fideInpK.value === "auto");
   renderFideOutput();
 }
 
-// FIDE wiring
-fideBtnAdd.addEventListener("click",    addFideRow);
-fideInpScore.addEventListener("change", fideRecalc);
-fideInpR.addEventListener("input",      fideRecalc);
-fideInpK.addEventListener("change",     fideRecalc);
-fideInpGames.addEventListener("input",  fideRecalc);
-fideInp2400.addEventListener("change",  fideRecalc);
+function addFideRow() {
+  const r = makeRow(fideList, fideRows, fideRecalc, false);
+  fideRows.push(r); fideRecalc(); r.inputEl.focus();
+}
+fideBtnAdd.addEventListener("click", addFideRow);
+fideInpR.addEventListener("input", fideRecalc);
+fideInpK.addEventListener("change", fideRecalc);
+fideInpGames.addEventListener("input", fideRecalc);
+fideInp2400.addEventListener("change", fideRecalc);
 fideInpYouth.addEventListener("change", fideRecalc);
 
-// Init FIDE with 5 rows
-for (let i = 0; i < 5; i++) makeFideRow();
-renderFideGrid();
+for (let i = 0; i < 5; i++) fideRows.push(makeRow(fideList, fideRows, fideRecalc, false));
 fideRecalc();
 
 // ═══════════════════════════════════════════════════════════════════════════
-// NORM-LOGIC SELF-TESTS (real tournament data)
+// SELF-TESTS (real tournament data)
 // ═══════════════════════════════════════════════════════════════════════════
-
 function runNormSelfTests() {
-  const results = [];
-  const approx = (a, b, tol) => Math.abs(a - b) <= tol;
-  const check  = (name, pass, detail) => results.push({ name, pass: !!pass, detail: detail || "" });
+  const out = [], approx = (a, b, t) => Math.abs(a - b) <= t;
+  const check = (name, pass, detail) => out.push({ name, pass: !!pass, detail: detail || "" });
 
-  // ── Cᵢ piecewise boundaries ──
-  check("Cᵢ: Δ ≤ −400 → 0",      normCi(2000, 2400) === 0,                 `got ${normCi(2000,2400)}`);
-  check("Cᵢ: Δ = 0 → 0.5",       normCi(2000, 2000) === 0.5,               `got ${normCi(2000,2000)}`);
-  check("Cᵢ: Δ = −100 → 0.375",  approx(normCi(2000,2100), 0.375, 1e-9),   `got ${normCi(2000,2100)}`);
-  check("Cᵢ: Δ = 100 → 0.75",    approx(normCi(2000,1900), 0.75, 1e-9),    `got ${normCi(2000,1900)}`);
-  check("Cᵢ: Δ = 200 → 1.0",     approx(normCi(2000,1800), 1.0, 1e-9),     `got ${normCi(2000,1800)}`);
-  check("Cᵢ: Δ > 200 → 1",       normCi(2000, 1500) === 1,                 `got ${normCi(2000,1500)}`);
+  check("Cᵢ Δ≤−400 → 0", normCi(2000, 2400) === 0);
+  check("Cᵢ Δ=0 → 0.5", normCi(2000, 2000) === 0.5);
+  check("Cᵢ Δ=−100 → 0.375", approx(normCi(2000, 2100), 0.375, 1e-9));
+  check("Cᵢ Δ=100 → 0.75", approx(normCi(2000, 1900), 0.75, 1e-9));
+  check("Cᵢ Δ=200 → 1.0", approx(normCi(2000, 1800), 1.0, 1e-9));
+  check("Cᵢ Δ>200 → 1", normCi(2000, 1500) === 1);
 
-  // ── MISS case: Y=2000, score 3.0 — must be NOT earned ──
-  const missField = [1994, 2041, 2014, 2065, 2247];
-  const mr = normResult(2000, missField, 3.0, 1.0);
-  check("Miss: CT ≈ 2.056",            approx(mr.CT, 2.056, 0.005),         `CT=${mr.CT.toFixed(4)}`);
-  check("Miss: threshold ≈ 3.056",     approx(mr.threshold, 3.056, 0.005),  `thr=${mr.threshold.toFixed(4)}`);
-  check("Miss: NOT earned",            mr.earned === false,                 `earned=${mr.earned}`);
-  check("Miss: margin above ≈ 0.944",  approx(mr.marginAbove, 0.944, 0.005),`margin=${mr.marginAbove.toFixed(4)}`);
-  const mUni = uniformGapNeeded(2000, missField, 3.0, 1.0);
-  check("Miss: uniform gap ≈ +8/opp",  Math.round(mUni) === 8,              `≈ +${Math.round(mUni)} (raw ${mUni.toFixed(2)})`);
-  const mSingle = cheapestSingleBump(2000, missField, 3.0, 1.0);
-  check("Miss: cheapest single ≈ +39", mSingle && Math.round(mSingle.points) >= 38 && Math.round(mSingle.points) <= 40,
-                                       mSingle ? `≈ +${Math.round(mSingle.points)} (raw ${mSingle.points.toFixed(2)})` : "null");
-  check("Miss: cheapest opp = 1994",   mSingle && mSingle.oppRating === 1994 && mSingle.index === 0,
-                                       mSingle ? `opp ${mSingle.oppRating} (idx ${mSingle.index})` : "null");
+  const mf = [1994, 2041, 2014, 2065, 2247];
+  const mr = normResult(2000, mf, 3.0, 1.0);
+  check("Miss: CT ≈ 2.056", approx(mr.CT, 2.056, 0.005), `CT=${mr.CT.toFixed(4)}`);
+  check("Miss: threshold ≈ 3.056", approx(mr.threshold, 3.056, 0.005), `thr=${mr.threshold.toFixed(4)}`);
+  check("Miss: NOT earned", mr.earned === false);
+  check("Miss: margin ≈ 0.944", approx(mr.marginAbove, 0.944, 0.005), `m=${mr.marginAbove.toFixed(4)}`);
+  const u = uniformGapNeeded(2000, mf, 3.0, 1.0);
+  check("Miss: uniform gap ≈ +8/opp", Math.round(u) === 8, `raw ${u.toFixed(2)}`);
+  const s = cheapestSingleBump(2000, mf, 3.0, 1.0);
+  check("Miss: cheapest single ≈ +39", s && Math.round(s.points) >= 38 && Math.round(s.points) <= 40, s ? `+${Math.round(s.points)}` : "null");
+  check("Miss: cheapest opp = 1994", s && s.oppRating === 1994 && s.index === 0);
 
-  // ── PASS case: same field raised ~15 each — must be EARNED ──
-  const passField = [2009, 2056, 2029, 2080, 2262];
-  const pr = normResult(2000, passField, 3.0, 1.0);
-  check("Pass: CT < 2.0",        pr.CT < 2.0,            `CT=${pr.CT.toFixed(4)}`);
-  check("Pass: threshold < 3.0", pr.threshold < 3.0,     `thr=${pr.threshold.toFixed(4)}`);
-  check("Pass: EARNED",          pr.earned === true,     `earned=${pr.earned}`);
+  const pf = [2009, 2056, 2029, 2080, 2262];
+  const pr = normResult(2000, pf, 3.0, 1.0);
+  check("Pass: CT < 2.0", pr.CT < 2.0, `CT=${pr.CT.toFixed(4)}`);
+  check("Pass: EARNED", pr.earned === true);
 
-  // ── BOUNDARY case: score exactly equals CT + 1.0 → strict > means NOT earned ──
-  const tieField = [2000, 2000, 2000, 2000]; // CT = 2.0 exactly, threshold = 3.0 exactly
-  const tr = normResult(2000, tieField, 3.0, 1.0);
-  check("Boundary: threshold === 3.0",        tr.threshold === 3.0,        `thr=${tr.threshold}`);
-  check("Boundary: exact tie NOT earned (>)", tr.earned === false,         `earned=${tr.earned}`);
-  const tr2 = normResult(2000, tieField, 3.5, 1.0);
-  check("Boundary: +0.5 above IS earned",     tr2.earned === true,         `earned=${tr2.earned}`);
+  const tf = [2000, 2000, 2000, 2000];
+  const tr = normResult(2000, tf, 3.0, 1.0);
+  check("Boundary: threshold === 3.0", tr.threshold === 3.0);
+  check("Boundary: exact tie NOT earned (>)", tr.earned === false);
+  check("Boundary: +0.5 above IS earned", normResult(2000, tf, 3.5, 1.0).earned === true);
 
-  // ── Bye/forfeit special case: 3 games, +2.0 margin required ──
-  const byeRes = normResult(2000, [2000,2000,2000], 3.0, 2.0); // CT=1.5, threshold=3.5
-  check("Bye: +2.0 margin → 3.0 NOT earned", byeRes.earned === false && approx(byeRes.threshold, 3.5, 1e-9),
-                                             `thr=${byeRes.threshold}`);
-
-  return results;
+  const br = normResult(2000, [2000, 2000, 2000], 3.0, 2.0);
+  check("Bye: +2.0 margin → 3.0 NOT earned", br.earned === false && approx(br.threshold, 3.5, 1e-9));
+  return out;
 }
-
 (function renderSelfTests() {
   const body = document.getElementById("selftest-body");
   let results;
-  try {
-    results = runNormSelfTests();
-  } catch (e) {
-    if (body) body.innerHTML = `<p style="color:var(--rose)">Self-tests threw: ${e.message}</p>`;
-    console.error("[norm self-tests] threw", e);
-    return;
-  }
-  const passed = results.filter(r => r.pass).length;
-  const total  = results.length;
-  const allPass = passed === total;
-
-  console.log(`%c[norm self-tests] ${passed}/${total} passed`, `color:${allPass ? "green" : "red"};font-weight:bold`);
-  results.filter(r => !r.pass).forEach(r => console.error("FAIL:", r.name, "—", r.detail));
-
+  try { results = runNormSelfTests(); }
+  catch (e) { if (body) body.innerHTML = `<p style="color:#b3261e">Self-tests threw: ${e.message}</p>`; console.error(e); return; }
+  const passed = results.filter(r => r.pass).length, total = results.length, all = passed === total;
+  console.log(`%c[norm self-tests] ${passed}/${total} passed`, `color:${all ? "green" : "red"};font-weight:bold`);
+  results.filter(r => !r.pass).forEach(r => console.error("FAIL:", r.name, r.detail));
   if (!body) return;
-  let html = `<p style="font-weight:700;color:${allPass ? "var(--emerald)" : "var(--rose)"}">${passed}/${total} passed${allPass ? " ✓" : " — see failures below"}</p>`;
-  html += '<div style="font-family:\'Cascadia Code\',Consolas,monospace;font-size:.76rem;line-height:1.75">';
-  results.forEach(r => {
-    html += `<div style="color:${r.pass ? "var(--emerald)" : "var(--rose)"}">${r.pass ? "✓" : "✗"} ${r.name}` +
-            `${r.detail ? ` <span style="color:var(--ink-faint)">— ${r.detail}</span>` : ""}</div>`;
-  });
-  html += '</div>';
+  let html = `<p style="font-weight:700;color:${all ? "var(--green)" : "#b3261e"}">${passed}/${total} passed${all ? " ✓" : " — see failures"}</p>`;
+  html += `<div class="num" style="font-size:12px;line-height:1.8">`;
+  results.forEach(r => { html += `<div style="color:${r.pass ? "var(--green)" : "#b3261e"}">${r.pass ? "✓" : "✗"} ${r.name}${r.detail ? ` <span style="color:var(--faint)">— ${r.detail}</span>` : ""}</div>`; });
+  html += `</div>`;
   body.innerHTML = html;
 })();
 
 // ═══════════════════════════════════════════════════════════════════════════
-// "LAST UPDATED" STAMP
-// Shows a hardcoded fallback immediately, then refines it to the repo's real
-// latest-commit date via the public GitHub API, so it auto-updates on deploy.
+// "LAST UPDATED" STAMP — fallback, then refine from GitHub API
 // ═══════════════════════════════════════════════════════════════════════════
 (function lastUpdated() {
-  const FALLBACK_ISO = "2026-06-23T18:30:00Z"; // updated at deploy; GitHub API overrides when reachable
-  const relEl = document.getElementById("updated-rel");
-  const absEl = document.getElementById("updated-abs");
+  const FALLBACK_ISO = "2026-06-23T19:00:00Z";
+  const relEl = document.getElementById("updated-rel"), absEl = document.getElementById("updated-abs");
   if (!relEl || !absEl) return;
-
-  function relTime(date) {
-    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
-    if (days <= 0)   return "today";
-    if (days === 1)  return "yesterday";
-    if (days < 7)    return `${days} days ago`;
-    if (days < 14)   return "last week";
-    if (days < 60)   return `${Math.floor(days / 7)} weeks ago`;
-    if (days < 730)  return `${Math.floor(days / 30)} months ago`;
+  function relTime(d) {
+    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    if (days <= 0) return "today"; if (days === 1) return "yesterday";
+    if (days < 7) return `${days} days ago`; if (days < 14) return "last week";
+    if (days < 60) return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 730) return `${Math.floor(days / 30)} months ago`;
     return `${Math.floor(days / 365)} years ago`;
   }
-  function render(date) {
-    if (isNaN(date.getTime())) return;
-    relEl.textContent = relTime(date);
-    absEl.textContent = date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-    absEl.title = date.toString();
+  function render(d) {
+    if (isNaN(d.getTime())) return;
+    relEl.textContent = relTime(d);
+    absEl.textContent = d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    absEl.title = d.toString();
   }
-
   render(new Date(FALLBACK_ISO));
-
-  // Refine to the actual latest commit (public repo — no auth needed).
-  fetch("https://api.github.com/repos/BoomerTao/chess-calculator/commits?per_page=1",
-        { headers: { "Accept": "application/vnd.github+json" } })
+  fetch("https://api.github.com/repos/BoomerTao/chess-calculator/commits?per_page=1", { headers: { "Accept": "application/vnd.github+json" } })
     .then(r => r.ok ? r.json() : null)
-    .then(data => {
-      const iso = data && data[0] && data[0].commit && data[0].commit.committer && data[0].commit.committer.date;
-      if (iso) render(new Date(iso));
-    })
-    .catch(() => { /* offline or rate-limited — keep fallback */ });
+    .then(data => { const iso = data && data[0] && data[0].commit && data[0].commit.committer && data[0].commit.committer.date; if (iso) render(new Date(iso)); })
+    .catch(() => {});
 })();
 </script>
 </body>
