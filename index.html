@@ -710,6 +710,7 @@ function makeRow(list, arr, recalcFn, withExp) {
   xEl.addEventListener("click", () => {
     if (arr.length === 1) return;
     const i = arr.indexOf(rowObj); if (i >= 0) arr.splice(i, 1);
+    renderList(list, arr);   // rebuild DOM only on structural change
     recalcFn();
   });
   el.appendChild(numEl); el.appendChild(inputEl);
@@ -933,7 +934,6 @@ function recalc() {
   const ratings = validRatings(usRows, 100);
   const m = usRows.length;
   if (usScore !== "" && parseFloat(usScore) > m) usScore = "";
-  renderList(oppList, usRows);
   renderPills(scorePills, m, usScore, v => { usScore = (usScore === v ? "" : v); recalc(); });
   byeField.style.display = (m === 3) ? "flex" : "none";
 
@@ -950,7 +950,7 @@ function recalc() {
 
 function addUsRow() {
   const r = makeRow(oppList, usRows, recalc, true);
-  usRows.push(r); recalc(); r.inputEl.focus();
+  usRows.push(r); renderList(oppList, usRows); recalc(); r.inputEl.focus();
 }
 btnAdd.addEventListener("click", addUsRow);
 inpR.addEventListener("input", recalc);
@@ -959,6 +959,7 @@ inpPeak.addEventListener("input", recalc);
 document.getElementById("inp-bye").addEventListener("change", recalc);
 
 for (let i = 0; i < 5; i++) usRows.push(makeRow(oppList, usRows, recalc, true));
+renderList(oppList, usRows);
 recalc();
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1046,7 +1047,6 @@ function renderFideOutput() {
 function fideRecalc() {
   const m = fideRows.length;
   if (fideScore !== "" && parseFloat(fideScore) > m) fideScore = "";
-  renderList(fideList, fideRows);
   renderPills(fidePills, m, fideScore, v => { fideScore = (fideScore === v ? "" : v); fideRecalc(); });
   fideAuto.classList.toggle("show", fideInpK.value === "auto");
   renderFideOutput();
@@ -1054,7 +1054,7 @@ function fideRecalc() {
 
 function addFideRow() {
   const r = makeRow(fideList, fideRows, fideRecalc, false);
-  fideRows.push(r); fideRecalc(); r.inputEl.focus();
+  fideRows.push(r); renderList(fideList, fideRows); fideRecalc(); r.inputEl.focus();
 }
 fideBtnAdd.addEventListener("click", addFideRow);
 fideInpR.addEventListener("input", fideRecalc);
@@ -1064,6 +1064,7 @@ fideInp2400.addEventListener("change", fideRecalc);
 fideInpYouth.addEventListener("change", fideRecalc);
 
 for (let i = 0; i < 5; i++) fideRows.push(makeRow(fideList, fideRows, fideRecalc, false));
+renderList(fideList, fideRows);
 fideRecalc();
 
 // ═══════════════════════════════════════════════════════════════════════════
