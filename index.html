@@ -45,6 +45,10 @@
   --green-bd: #BFE0CB;
   --green-pill: #E2EDE9;
 
+  --blue:     #2D6CA8;
+  --blue-bg:  #E5EDF6;
+  --blue-bd:  #BCD2E8;
+
   --serif: 'Newsreader', Georgia, serif;
   --sans:  'Hanken Grotesk', system-ui, -apple-system, sans-serif;
   --mono:  'Space Grotesk', ui-monospace, 'Cascadia Code', monospace;
@@ -241,6 +245,8 @@ body {
 
 /* projection / output cards */
 .out-card { background: var(--card); border: 1px solid var(--hair-2); border-radius: 14px; padding: 22px; }
+.out-card.us   { border-top: 3px solid var(--green); }
+.out-card.fide { border-top: 3px solid var(--blue); }
 .out-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--label); margin-bottom: 5px; }
 .out-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
 .out-big { font-size: 48px; font-weight: 600; line-height: 0.9; letter-spacing: -0.02em; color: var(--ink); }
@@ -264,8 +270,9 @@ body {
 
 /* divider */
 .divider { display: flex; align-items: center; gap: 16px; margin-top: 38px; }
-.divider .ln { height: 1px; flex: 1; background: #DAD5C9; }
-.divider .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+.divider .ln { height: 1px; flex: 1; background: linear-gradient(90deg, transparent, var(--blue-bd)); }
+.divider .ln:last-child { background: linear-gradient(90deg, var(--blue-bd), transparent); }
+.divider .lbl { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); }
 
 .cross-note {
   margin-top: 16px; padding: 13px 16px; background: var(--gold-note);
@@ -506,6 +513,9 @@ const NORM_LEVELS = [
 const CLASS_FLOORS = [1200,1300,1400,1500,1600,1700,1800,1900,2000,2100];
 const BONUS_B = 10; // effective January 1, 2025
 
+// Per-level accent colors — a cool→warm rank progression (4th Cat → Senior Master).
+const LEVEL_COLORS = ["#5E86A8","#2F9C8B","#4FA15A","#8AA63C","#E0A12B","#D2783A","#A8497E"];
+
 // ═══════════════════════════════════════════════════════════════════════════
 // PURE LOGIC  (verified — unchanged from the working calculator)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -734,11 +744,13 @@ function renderHero(ratings, m, norm) {
   }
   const row = norm.rows[idx];
   const sub = `${row.Y.toLocaleString()} LEVEL · NORM AT THIS FIELD`;
+  const accent = LEVEL_COLORS[idx];
+  const pip = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${accent};box-shadow:0 0 0 3px ${accent}33"></span>`;
 
   if (!norm.hasScore) {
     heroEl.innerHTML = `<div class="hero-knight">♞</div>
       <div class="hero-main">
-        <div class="hero-kicker-row"><span class="hero-kicker">Top achievable</span></div>
+        <div class="hero-kicker-row">${pip}<span class="hero-kicker">Top achievable</span></div>
         <div class="hero-title">${row.name}</div>
         <div class="hero-sub">${sub}</div>
       </div>
@@ -762,7 +774,7 @@ function renderHero(ratings, m, norm) {
 
   heroEl.innerHTML = `<div class="hero-knight">♞</div>
     <div class="hero-main">
-      <div class="hero-kicker-row"><span class="hero-kicker">Top norm result</span>${pill}</div>
+      <div class="hero-kicker-row">${pip}<span class="hero-kicker">Top norm result</span>${pill}</div>
       <div class="hero-title">${row.name}</div>
       <div class="hero-sub">${sub}</div>
       <div class="hero-bar-wrap">
@@ -818,10 +830,12 @@ function renderLadder(ratings, m, norm) {
         weight = 500; status = "Out of reach"; statusColor = "var(--faint-3)"; marginTxt = "—"; marginColor = "var(--faint-3)";
       }
     }
+    const accent = LEVEL_COLORS[i];
+    const reachable = row.possible || row.earned;
     return `<div class="lad-row" style="background:${bg};border-color:${border}">
-      <div class="lad-rail" style="background:${rail}"></div>
+      <div class="lad-rail" style="background:${accent};opacity:${reachable ? 1 : 0.4}"></div>
       <div class="lad-name" style="color:${nameColor};font-weight:${weight}">${row.name}</div>
-      <div class="lad-level num">${row.Y}</div>
+      <div class="lad-level num" style="color:${accent};opacity:${reachable ? 0.85 : 0.4}">${row.Y}</div>
       <div class="lad-margin num" style="color:${marginColor}">${marginTxt}</div>
       <div class="lad-status" style="color:${statusColor}">${status}</div>
     </div>`;
@@ -868,7 +882,7 @@ function renderProjection(ratings, m, score) {
   const S = hasScore ? parseFloat(score) : null;
 
   if (!hasScore) {
-    projEl.innerHTML = `<div class="out-card">
+    projEl.innerHTML = `<div class="out-card us">
       <div class="out-label">Projection</div>
       <div class="out-empty" style="padding-bottom:14px">Pick a score to project your new rating.</div>
       <div class="out-stats">
@@ -892,7 +906,7 @@ function renderProjection(ratings, m, score) {
   if (belowFloor) note = `<div class="out-note gold"><b>Floor applied (${pf.floor}).</b> Projected ${R_new} is below your ${pf.label}.</div>`;
   else if (bonus > 0) note = `<div class="out-note green"><b>Bonus +${f2(bonus)}.</b> K(S−We)=${f2(baseChange)} exceeds the B√m* threshold ${f2(bonusThreshold)}.</div>`;
 
-  projEl.innerHTML = `<div class="out-card">
+  projEl.innerHTML = `<div class="out-card us">
     <div class="out-label">New rating</div>
     <div class="out-top">
       <div class="out-big num">${R_display.toLocaleString()}</div>
@@ -991,7 +1005,7 @@ function renderFideOutput() {
   const capStat = R < 2650 ? "400" : "—";
 
   if (!hasScore) {
-    fideOutput.innerHTML = `<div class="out-card">
+    fideOutput.innerHTML = `<div class="out-card fide">
       <div class="out-label">FIDE projection</div>
       <div class="out-empty" style="padding-bottom:14px">Pick a score to project your FIDE change.</div>
       <div class="out-stats">
@@ -1013,7 +1027,7 @@ function renderFideOutput() {
   if (R_new < 1400) note = `<div class="out-note gold"><b>Below FIDE floor.</b> Ratings under 1400 show as unrated next list (§7.2.1).</div>`;
   else if (capped) note = `<div class="out-note gold"><b>${capNote}</b> (§8.3.3).</div>`;
 
-  fideOutput.innerHTML = `<div class="out-card">
+  fideOutput.innerHTML = `<div class="out-card fide">
     <div class="out-label">New FIDE rating</div>
     <div class="out-top">
       <div class="out-big num">${R_new.toLocaleString()}</div>
