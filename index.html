@@ -608,6 +608,29 @@ details[open] summary::before { transform: rotate(90deg); }
   margin-top: .2rem;
 }
 
+/* ── Footer ──────────────────────────────────────────────────────── */
+.site-footer {
+  margin-top: 1.75rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  color: var(--ink-faint);
+}
+.site-footer strong { color: var(--ink-soft); font-weight: 700; }
+.footer-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--emerald-bd);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 3px var(--emerald-lt);
+}
+.footer-sep { color: var(--border-med); }
+
 /* ── Responsive tweaks ────────────────────────────────────────────── */
 @media (max-width: 480px) {
   .site-header { padding: 1.5rem 1rem 1.35rem; }
@@ -861,6 +884,14 @@ details[open] summary::before { transform: rotate(90deg); }
       </div>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════ FOOTER -->
+  <footer class="site-footer">
+    <span class="footer-dot" id="updated-dot"></span>
+    Last updated <strong id="updated-rel">recently</strong>
+    <span class="footer-sep">·</span>
+    <span id="updated-abs"></span>
+  </footer>
 
 </div><!-- /.page-body -->
 
@@ -1783,6 +1814,47 @@ function runNormSelfTests() {
   });
   html += '</div>';
   body.innerHTML = html;
+})();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// "LAST UPDATED" STAMP
+// Shows a hardcoded fallback immediately, then refines it to the repo's real
+// latest-commit date via the public GitHub API, so it auto-updates on deploy.
+// ═══════════════════════════════════════════════════════════════════════════
+(function lastUpdated() {
+  const FALLBACK_ISO = "2026-06-23T18:30:00Z"; // updated at deploy; GitHub API overrides when reachable
+  const relEl = document.getElementById("updated-rel");
+  const absEl = document.getElementById("updated-abs");
+  if (!relEl || !absEl) return;
+
+  function relTime(date) {
+    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
+    if (days <= 0)   return "today";
+    if (days === 1)  return "yesterday";
+    if (days < 7)    return `${days} days ago`;
+    if (days < 14)   return "last week";
+    if (days < 60)   return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 730)  return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
+  }
+  function render(date) {
+    if (isNaN(date.getTime())) return;
+    relEl.textContent = relTime(date);
+    absEl.textContent = date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+    absEl.title = date.toString();
+  }
+
+  render(new Date(FALLBACK_ISO));
+
+  // Refine to the actual latest commit (public repo — no auth needed).
+  fetch("https://api.github.com/repos/BoomerTao/chess-calculator/commits?per_page=1",
+        { headers: { "Accept": "application/vnd.github+json" } })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      const iso = data && data[0] && data[0].commit && data[0].commit.committer && data[0].commit.committer.date;
+      if (iso) render(new Date(iso));
+    })
+    .catch(() => { /* offline or rate-limited — keep fallback */ });
 })();
 </script>
 </body>
