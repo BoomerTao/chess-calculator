@@ -55,20 +55,43 @@
 }
 
 body {
-  background: var(--paper-2);
+  background:
+    radial-gradient(1100px 520px at 50% -8%, rgba(231,178,75,0.08), transparent 62%),
+    radial-gradient(960px 620px at 10% 108%, rgba(28,122,84,0.14), transparent 60%),
+    radial-gradient(820px 520px at 100% 0%, rgba(45,108,168,0.10), transparent 58%),
+    linear-gradient(180deg, #16231F 0%, #0E1714 58%, #0A120F 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--sans);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   font-size: 15px;
 }
+/* faint techy grid overlay, fading toward the edges */
+body::before {
+  content: "";
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(circle at 50% 26%, #000 0%, transparent 82%);
+          mask-image: radial-gradient(circle at 50% 26%, #000 0%, transparent 82%);
+}
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
 
 .shell {
-  max-width: 1280px;
-  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 26px auto;
   background: var(--paper);
-  min-height: 100vh;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 40px 90px -40px rgba(0,0,0,0.72), 0 0 0 1px rgba(255,255,255,0.06);
+}
+@media (max-width: 760px) {
+  .shell { margin: 0; border-radius: 0; box-shadow: none; }
 }
 
 /* ── Masthead ─────────────────────────────────────────────────────── */
@@ -119,6 +142,8 @@ body {
   text-transform: uppercase; color: var(--label);
 }
 .eyebrow-note { font-size: 11px; color: var(--faint-2); }
+.input-caption { margin-top: 9px; font-size: 11px; line-height: 1.5; color: var(--faint); }
+.input-caption b { color: var(--ink-3); font-weight: 600; }
 
 /* opponent list */
 .opp-card { background: var(--card); border: 1px solid var(--hair-2); border-radius: 12px; overflow: hidden; }
@@ -351,12 +376,13 @@ details[open] summary::before { transform: rotate(90deg); }
       <section class="side-sec">
         <div class="sec-head">
           <span class="eyebrow">Opponents</span>
-          <span class="eyebrow-note">post-event rating</span>
+          <span class="eyebrow-note">one per game</span>
         </div>
         <div class="opp-card">
           <div id="opp-list"></div>
           <button class="btn-add" id="btn-add"><span class="plus">+</span> Add opponent</button>
         </div>
+        <div class="input-caption">Read as <b>post-event</b> ratings for the norm ladder, and <b>pre-event</b> ratings for the rating projection.</div>
       </section>
 
       <section class="side-sec">
